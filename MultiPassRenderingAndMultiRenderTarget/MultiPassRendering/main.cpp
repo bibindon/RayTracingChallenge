@@ -431,7 +431,7 @@ void RenderPass1()
 
     // タイトル
     TCHAR msg[100];
-    _tcscpy_s(msg, 100, _T("SSAOに挑戦"));
+    _tcscpy_s(msg, 100, _T("Ray Tracing Challenge"));
     TextDraw(g_pFont, msg, 0, 0);
 
     // === 変更: MRT 用テクニックを使用 ===

@@ -29,7 +29,7 @@ struct MeshData {
     D3DXVECTOR3 position;
 };
 
-const int NUM_MESHES = 6;
+const int NUM_MESHES = 7;
 MeshData g_meshes[NUM_MESHES];
 LPD3DXEFFECT g_pEffect = NULL;
 bool g_bClose = false;
@@ -198,14 +198,16 @@ void InitD3D(HWND hWnd)
         _T("cube_blue.x"),
         _T("cube_white.x"),
         _T("cube_white_big.x"),
+        _T("cube_white_big.x"),
     };
     D3DXVECTOR3 meshPositions[NUM_MESHES] = {
-        D3DXVECTOR3( 0.0f,   0.0f,  0.0f),
-        D3DXVECTOR3( 4.0f,   0.0f,  0.0f),
-        D3DXVECTOR3(-4.0f,   0.0f,  0.0f),
-        D3DXVECTOR3( 0.0f,   0.0f,  4.0f),
-        D3DXVECTOR3( 0.0f,   0.0f, -4.0f),
-        D3DXVECTOR3( 0.0f, -11.0f,  0.0f),
+        D3DXVECTOR3( 0.0f,   0.0f,   0.0f),
+        D3DXVECTOR3( 4.0f,   0.0f,   0.0f),
+        D3DXVECTOR3(-4.0f,   0.0f,   0.0f),
+        D3DXVECTOR3( 0.0f,   0.0f,   4.0f),
+        D3DXVECTOR3( 0.0f,   0.0f,  -4.0f),
+        D3DXVECTOR3( 0.0f, -11.0f,   0.0f),
+        D3DXVECTOR3(-16.0f,   0.0f,  0.0f),
     };
 
     for (int m = 0; m < NUM_MESHES; m++)

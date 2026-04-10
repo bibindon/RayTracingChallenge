@@ -528,21 +528,24 @@ void RenderPass2()
     hResult = g_pEffect2->End();     assert(hResult == S_OK);
 
     // === 追加: 左上に RT1 を 1/2 スケールで表示（D3DXSPRITE） ===
-    if (g_pSprite)
+    if (false)
     {
-        hResult = g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);  assert(hResult == S_OK);
+        if (g_pSprite)
+        {
+            hResult = g_pSprite->Begin(D3DXSPRITE_ALPHABLEND);  assert(hResult == S_OK);
 
-        D3DXMATRIX mat;
-        D3DXVECTOR2 scaling(0.5f, 0.5f);     // 半分
-        D3DXVECTOR2 trans(0.0f, 0.0f);       // 左上
-        D3DXMatrixTransformation2D(&mat, NULL, 0.0f, &scaling, NULL, 0.0f, &trans);
-        g_pSprite->SetTransform(&mat);
+            D3DXMATRIX mat;
+            D3DXVECTOR2 scaling(0.5f, 0.5f);     // 半分
+            D3DXVECTOR2 trans(0.0f, 0.0f);       // 左上
+            D3DXMatrixTransformation2D(&mat, NULL, 0.0f, &scaling, NULL, 0.0f, &trans);
+            g_pSprite->SetTransform(&mat);
 
-        // そのまま (0,0) へ描画
-        hResult = g_pSprite->Draw(g_pRenderTarget2, NULL, NULL, NULL, 0xFFFFFFFF);
-        assert(hResult == S_OK);
+            // そのまま (0,0) へ描画
+            hResult = g_pSprite->Draw(g_pRenderTarget2, NULL, NULL, NULL, 0xFFFFFFFF);
+            assert(hResult == S_OK);
 
-        hResult = g_pSprite->End(); assert(hResult == S_OK);
+            hResult = g_pSprite->End(); assert(hResult == S_OK);
+        }
     }
 
     hResult = g_pd3dDevice->EndScene();  assert(hResult == S_OK);

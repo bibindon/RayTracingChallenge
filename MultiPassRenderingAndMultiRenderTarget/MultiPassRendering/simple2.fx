@@ -77,8 +77,9 @@ void PixelShader1(in float4 inPosition    : POSITION,
             // マーチ先の深度が現在のピクセルより小さい（手前にある）ならヒット
             if (sampleDepth < depth - 0.001)
             {
-                // ヒット地点のカラーを反射として表示
-                workColor = tex2D(textureSampler, sampleUV);
+                // ヒット地点のカラーを半分だけ混ぜて表示
+                float4 hitColor = tex2D(textureSampler, sampleUV);
+                workColor = lerp(workColor, hitColor, 0.5);
             }
         }
     }

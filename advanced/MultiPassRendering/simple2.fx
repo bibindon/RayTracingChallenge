@@ -106,20 +106,10 @@ void PixelShader1(in float4 inPosition    : POSITION,
             {
                 float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
 
-                // 深度差に基づくソフトな判定（手前にあるほど強く反映）
-                float depthDiff = depth - sampleDepth;
-                if (depthDiff > 0.00001)
+                if (depth - sampleDepth > 0.00001)
                 {
-                    // 深度差が大きいほど強く、smoothstep で滑らかに立ち上げる
-                    float softHit = smoothstep(0.00001, 0.5, depthDiff);
-
-                    float weight = softHit;
-                    if (true)
-                    {
-                        weight = depthDiff;
-                    }
-                    accumColor += tex2Dlod(textureSampler, float4(sampleUV, 0, 0)) * weight;
-                    hitWeight += weight;
+                    accumColor += tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
+                    hitWeight += 1.0;
                 }
             }
         }

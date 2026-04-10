@@ -332,7 +332,7 @@ void InitD3D(HWND hWnd)
                                  1600, 900,
                                  1,
                                  D3DUSAGE_RENDERTARGET,
-                                 D3DFMT_A8R8G8B8,
+                                 D3DFMT_R32F,
                                  D3DPOOL_DEFAULT,
                                  &g_pRenderTarget2);
     assert(hResult == S_OK);

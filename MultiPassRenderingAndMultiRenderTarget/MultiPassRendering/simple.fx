@@ -13,14 +13,15 @@ sampler textureSampler = sampler_state
     MagFilter = LINEAR;
 };
 
-// ▼ 頂点シェーダー：clip空間の z/w を 0..1 にして渡す（非線形だが追加定数なしで簡単）
+// ▼ 頂点シェーダー：clip空間の z/w を 0..1 にして渡す + 法線を渡す
 void VertexShader1(
     in float4 inPosition : POSITION,
     in float3 inNormal : NORMAL,
     in float2 inTexCoord0 : TEXCOORD0,
     out float4 outPosition : POSITION0,
     out float2 outTexCoord0 : TEXCOORD0,
-    out float outDepth01 : TEXCOORD1)
+    out float outDepth01 : TEXCOORD1,
+    out float3 outNormal : TEXCOORD2)
 {
     float4 clipPosition = mul(inPosition, g_matWorldViewProj);
     outPosition = clipPosition;
@@ -29,12 +30,16 @@ void VertexShader1(
     // 0..1（近=0, 遠=1）
     float depthNdc = clipPosition.z / clipPosition.w;
     outDepth01 = saturate(depthNdc);
+
+    // 法線をそのまま渡す
+    outNormal = inNormal;
 }
 
-// ▼ ピクセルシェーダー：MRTのCOLOR1にグレースケールで深度を書き込む
+// ▼ ピクセルシェーダー：N·Lライティング + MRTのCOLOR1にグレースケールで深度を書き込む
 void PixelShaderMRT(
     in float2 inTexCoord0 : TEXCOORD0,
     in float inDepth01 : TEXCOORD1,
+    in float3 inNormal : TEXCOORD2,
     out float4 outColor0 : COLOR0,
     out float4 outColor1 : COLOR1)
 {
@@ -45,7 +50,12 @@ void PixelShaderMRT(
         baseColor = tex2D(textureSampler, inTexCoord0);
     }
 
-    outColor0 = baseColor;
+    // N·L ランバートライティング
+    float3 N = normalize(inNormal);
+    float3 L = normalize(g_lightNormal.xyz);
+    float NdotL = saturate(dot(N, L));
+    float3 lighting = g_ambient + (1.0 - g_ambient) * NdotL;
+    outColor0 = float4(baseColor.rgb * lighting, baseColor.a);
 
     // 近いほど黒、遠いほど白
     float d = inDepth01;

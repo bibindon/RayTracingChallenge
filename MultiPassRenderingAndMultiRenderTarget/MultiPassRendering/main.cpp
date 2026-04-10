@@ -447,6 +447,7 @@ void RenderPass1()
     }
 
     // 球（テクスチャなし）
+    if (false)
     {
         D3DXMATRIX matIdentity;
         D3DXMatrixIdentity(&matIdentity);

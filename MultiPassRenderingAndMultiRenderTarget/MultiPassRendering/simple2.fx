@@ -43,8 +43,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
                   out float4 outColor     : COLOR)
 {
-    float4 workColor = (float4)0;
-    workColor = tex2D(textureSampler, inTexCood);
+    float4 workColor = tex2D(textureSampler, inTexCood);
 
     // 深度テクスチャからサンプリング（0=近, 1=遠）
     float depth = tex2D(depthSampler, inTexCood).r;
@@ -52,33 +51,36 @@ void PixelShader1(in float4 inPosition    : POSITION,
     // 法線テクスチャからサンプリングし [0,1] → [-1,1] にデコード
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
 
-    // 試しに彩度を上げたり下げたりしてみる
-    if (false)
+    // --- スクリーンスペース レイマーチング（1次反射） ---
+
+    // 1ピクセル分の UV ステップ
+    float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
+
+    // 法線の XY をスクリーンスペースのマーチ方向に使用
+    // UV 空間は V が下向きなので Y を反転
+    float2 marchDir = float2(normal.x, -normal.y);
+    float dirLen = length(marchDir);
+
+    if (dirLen > 0.001)
     {
-        float average = 0.f;
-        if (false)
-        {
-            average = (workColor.r + workColor.g + workColor.b) / 3;
-        }
-        else
-        {
-            average = workColor.r * 0.2 + workColor.g * 0.7 + workColor.b * 0.1;
-        }
+        marchDir = marchDir / dirLen; // 正規化
 
-        if (false)
-        {
-            workColor.r += (workColor.r - average);
-            workColor.g += (workColor.g - average);
-            workColor.b += (workColor.b - average);
-        }
-        else
-        {
-            workColor.r -= (workColor.r - average) / 2.f;
-            workColor.g -= (workColor.g - average) / 2.f;
-            workColor.b -= (workColor.b - average) / 2.f;
-        }
+        // 法線方向に 100 ピクセル先の UV を求める
+        float2 sampleUV = inTexCood + marchDir * pixelSize * 100.0;
 
-        workColor = saturate(workColor);
+        // 範囲内なら深度チェック
+        if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
+            sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
+        {
+            float sampleDepth = tex2D(depthSampler, sampleUV).r;
+
+            // マーチ先の深度が現在のピクセルより小さい（手前にある）ならヒット
+            if (sampleDepth < depth - 0.001)
+            {
+                // ヒット地点のカラーを反射として表示
+                workColor = tex2D(textureSampler, sampleUV);
+            }
+        }
     }
 
     outColor = workColor;

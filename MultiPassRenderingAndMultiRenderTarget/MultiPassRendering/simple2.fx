@@ -30,24 +30,34 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float4 workColor = (float4)0;
     workColor = tex2D(textureSampler, inTexCood);
 
-    //float average = (workColor.r + workColor.g + workColor.b) / 3;
-    float average = workColor.r * 0.2 + workColor.g * 0.7 + workColor.b * 0.1;
-
     // 試しに彩度を上げたり下げたりしてみる
-    if (true)
+    if (false)
     {
-        workColor.r += (workColor.r - average);
-        workColor.g += (workColor.g - average);
-        workColor.b += (workColor.b - average);
-    }
-    else
-    {
-        workColor.r -= (workColor.r - average) / 2.f;
-        workColor.g -= (workColor.g - average) / 2.f;
-        workColor.b -= (workColor.b - average) / 2.f;
-    }
+        float average = 0.f;
+        if (false)
+        {
+            average = (workColor.r + workColor.g + workColor.b) / 3;
+        }
+        else
+        {
+            average = workColor.r * 0.2 + workColor.g * 0.7 + workColor.b * 0.1;
+        }
 
-    workColor = saturate(workColor);
+        if (false)
+        {
+            workColor.r += (workColor.r - average);
+            workColor.g += (workColor.g - average);
+            workColor.b += (workColor.b - average);
+        }
+        else
+        {
+            workColor.r -= (workColor.r - average) / 2.f;
+            workColor.g -= (workColor.g - average) / 2.f;
+            workColor.b -= (workColor.b - average) / 2.f;
+        }
+
+        workColor = saturate(workColor);
+    }
 
     outColor = workColor;
     

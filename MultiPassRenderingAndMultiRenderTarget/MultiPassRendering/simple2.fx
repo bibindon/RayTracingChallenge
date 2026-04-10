@@ -38,6 +38,22 @@ void VertexShader1(in  float4 inPosition  : POSITION,
     outTexCood = inTexCood;
 }
 
+// 2Dベクトルを angle（ラジアン）だけ回転
+float2 RotateDir(float2 dir, float angle)
+{
+    float s, c;
+    sincos(angle, s, c);
+    return float2(dir.x * c - dir.y * s,
+                  dir.x * s + dir.y * c);
+}
+
+// 法線方向から ±90° に均等配置した 7 本のレイ角度
+// -75°, -50°, -25°, 0°, +25°, +50°, +75°
+static const int RAY_COUNT = 7;
+static const float rayAngles[RAY_COUNT] = {
+    -1.3090, -0.8727, -0.4363, 0.0, 0.4363, 0.8727, 1.3090
+};
+
 void PixelShader1(in float4 inPosition    : POSITION,
                   in float2 inTexCood     : TEXCOORD0,
 
@@ -51,7 +67,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     // 法線テクスチャからサンプリングし [0,1] → [-1,1] にデコード
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
 
-    // --- スクリーンスペース レイマーチング（1次反射） ---
+    // --- スクリーンスペース レイマーチング（1次反射 x7本） ---
 
     // 1ピクセル分の UV ステップ
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
@@ -65,22 +81,37 @@ void PixelShader1(in float4 inPosition    : POSITION,
     {
         marchDir = marchDir / dirLen; // 正規化
 
-        // 法線方向に 100 ピクセル先の UV を求める
-        float2 sampleUV = inTexCood + marchDir * pixelSize * 100.0;
+        float4 accumColor = (float4)0;
+        int hitCount = 0;
 
-        // 範囲内なら深度チェック
-        if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
-            sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
+        // 法線方向から ±90° の範囲で 7 本のレイを飛ばす
+        for (int r = 0; r < RAY_COUNT; r++)
         {
-            float sampleDepth = tex2D(depthSampler, sampleUV).r;
+            float2 rayDir = RotateDir(marchDir, rayAngles[r]);
 
-            // マーチ先の深度が現在のピクセルより小さい（手前にある）ならヒット
-            if (sampleDepth < depth - 0.001)
+            // 100 ピクセル先の UV を求める
+            float2 sampleUV = inTexCood + rayDir * pixelSize * 100.0;
+
+            // 範囲内なら深度チェック
+            if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
+                sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
             {
-                // ヒット地点のカラーを半分だけ混ぜて表示
-                float4 hitColor = tex2D(textureSampler, sampleUV);
-                workColor = lerp(workColor, hitColor, 0.5);
+                float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
+
+                // マーチ先の深度が現在のピクセルより小さい（手前にある）ならヒット
+                if (sampleDepth < depth - 0.001)
+                {
+                    accumColor += tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
+                    hitCount++;
+                }
             }
+        }
+
+        // ヒットしたレイのカラー平均を半分だけ混ぜる
+        if (hitCount > 0)
+        {
+            float4 avgHitColor = accumColor / (float)hitCount;
+            workColor = lerp(workColor, avgHitColor, 0.5);
         }
     }
 

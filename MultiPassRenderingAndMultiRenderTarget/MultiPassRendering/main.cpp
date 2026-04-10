@@ -438,6 +438,10 @@ void RenderPass1()
     hResult = g_pEffect1->SetTechnique("TechniqueMRT");
     assert(hResult == S_OK);
 
+    // ビュー行列をシェーダーに渡す（法線のビュー空間変換用）
+    hResult = g_pEffect1->SetMatrix("g_matView", &View);
+    assert(hResult == S_OK);
+
     UINT numPass = 0;
     hResult = g_pEffect1->Begin(&numPass, 0); assert(hResult == S_OK);
     hResult = g_pEffect1->BeginPass(0);       assert(hResult == S_OK);

@@ -221,12 +221,12 @@ void InitD3D(HWND hWnd)
     };
     MeshLoadInfo loadInfos[] =
     {
-        { _T("cube_red.x"),       D3DXVECTOR3(-1.5f,   0.0f, -1.5f) },
-        { _T("cube_white.x"),     D3DXVECTOR3( 1.5f,   0.0f, -1.5f) },
-        { _T("cube_blue.x"),      D3DXVECTOR3(-1.5f,   0.0f,  1.5f) },
-        { _T("cube_green.x"),     D3DXVECTOR3( 1.5f,   0.0f,  1.5f) },
+        { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f) },
+        { _T("cube_white.x"),     D3DXVECTOR3( 2.0f,   0.0f, -2.0f) },
+        { _T("cube_blue.x"),      D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
+        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.0f,  2.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },  // 地面（上面が y=-1）
-        { _T("cube_white_big.x"), D3DXVECTOR3(13.0f,  -8.0f,  0.0f) },  // 右壁（左面が x=3）
+        { _T("cube_white_big.x"), D3DXVECTOR3(14.0f,  -8.0f,  0.0f) },  // 右壁（左面が x=3）
     };
 
     const int meshCount = _countof(loadInfos);

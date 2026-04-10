@@ -13,6 +13,10 @@
 #include <crtdbg.h>
 #include <vector>
 
+static const float g_fCameraDistance = 12.0f;
+
+static const float g_fCameraMoveSpeed = 0.01f;
+
 #define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = NULL; } }
 
 LPDIRECT3D9 g_pD3D = NULL;
@@ -61,8 +65,6 @@ static void Cleanup();
 static void RenderPass1();
 static void RenderPass2();
 static void DrawFullscreenQuad();
-
-static const float g_fCameraDistance = 12.0f;
 
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -409,7 +411,7 @@ void RenderPass1()
     hResult = g_pd3dDevice->SetRenderTarget(2, pRT2); assert(hResult == S_OK);
 
     static float f = 0.0f;
-    f += 0.025f;
+    f += g_fCameraMoveSpeed;
 
     D3DXMATRIX View, Proj;
 

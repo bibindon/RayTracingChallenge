@@ -212,7 +212,7 @@ void InitD3D(HWND hWnd)
                              &g_pFont);
     assert(hResult == S_OK);
 
-    // 4 つのカラーキューブを読み込み
+    // 4 つのカラーキューブ + 地面・壁を読み込み
     struct MeshLoadInfo
     {
         const TCHAR* filename;
@@ -220,14 +220,17 @@ void InitD3D(HWND hWnd)
     };
     MeshLoadInfo loadInfos[] =
     {
-        { _T("cube_red.x"),   D3DXVECTOR3(-1.5f, 0.0f, -1.5f) },
-        { _T("cube_white.x"), D3DXVECTOR3( 1.5f, 0.0f, -1.5f) },
-        { _T("cube_blue.x"),  D3DXVECTOR3(-1.5f, 0.0f,  1.5f) },
-        { _T("cube_green.x"), D3DXVECTOR3( 1.5f, 0.0f,  1.5f) },
+        { _T("cube_red.x"),       D3DXVECTOR3(-1.5f,   0.0f, -1.5f) },
+        { _T("cube_white.x"),     D3DXVECTOR3( 1.5f,   0.0f, -1.5f) },
+        { _T("cube_blue.x"),      D3DXVECTOR3(-1.5f,   0.0f,  1.5f) },
+        { _T("cube_green.x"),     D3DXVECTOR3( 1.5f,   0.0f,  1.5f) },
+        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },  // 地面（上面が y=-1）
+        { _T("cube_white_big.x"), D3DXVECTOR3(13.0f,   0.0f,  0.0f) },  // 右壁（左面が x=3）
     };
 
-    g_meshes.resize(4);
-    for (int mi = 0; mi < 4; mi++)
+    const int meshCount = _countof(loadInfos);
+    g_meshes.resize(meshCount);
+    for (int mi = 0; mi < meshCount; mi++)
     {
         LPD3DXBUFFER pD3DXMtrlBuffer = NULL;
 

@@ -16,7 +16,8 @@ void VertexShader1(in  float4 inPosition  : POSITION,
                    out float4 outPosition : POSITION,
                    out float4 outDiffuse  : COLOR0,
                    out float4 outTexCood  : TEXCOORD0,
-                   out float3 outNormal   : TEXCOORD1)
+                   out float3 outNormal   : TEXCOORD1,
+                   out float2 outDepth    : TEXCOORD2)
 {
     outPosition = mul(inPosition, g_matWorldViewProj);
 
@@ -26,11 +27,13 @@ void VertexShader1(in  float4 inPosition  : POSITION,
 
     outTexCood = inTexCood;
     outNormal = inNormal.xyz;
+    outDepth = outPosition.zw;
 }
 
 void PixelShader1(in float4 inScreenColor : COLOR0,
                   in float2 inTexCood     : TEXCOORD0,
                   in float3 inNormal      : TEXCOORD1,
+                  in float2 inDepth       : TEXCOORD2,
 
                   out float4 outColor     : COLOR)
 {

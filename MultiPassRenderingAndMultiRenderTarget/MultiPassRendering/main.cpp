@@ -37,9 +37,10 @@ LPD3DXEFFECT g_pEffect2 = NULL;
 
 bool g_bClose = false;
 
-// === 変更: RT を 2 枚用意 ===
+// === 変更: RT を 3 枚用意 ===
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget2 = NULL;
+LPDIRECT3DTEXTURE9 g_pRenderTarget3 = NULL;
 
 // フルスクリーンクアッド用
 LPDIRECT3DVERTEXDECLARATION9 g_pQuadDecl = NULL;
@@ -225,7 +226,7 @@ void InitD3D(HWND hWnd)
         { _T("cube_blue.x"),      D3DXVECTOR3(-1.5f,   0.0f,  1.5f) },
         { _T("cube_green.x"),     D3DXVECTOR3( 1.5f,   0.0f,  1.5f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },  // 地面（上面が y=-1）
-        { _T("cube_white_big.x"), D3DXVECTOR3(13.0f,   0.0f,  0.0f) },  // 右壁（左面が x=3）
+        { _T("cube_white_big.x"), D3DXVECTOR3(13.0f,  -8.0f,  0.0f) },  // 右壁（左面が x=3）
     };
 
     const int meshCount = _countof(loadInfos);
@@ -324,12 +325,21 @@ void InitD3D(HWND hWnd)
     assert(hResult == S_OK);
 
     hResult = D3DXCreateTexture(g_pd3dDevice,
-                                1600, 900,
-                                1,
-                                D3DUSAGE_RENDERTARGET,
-                                D3DFMT_A8R8G8B8,
-                                D3DPOOL_DEFAULT,
-                                &g_pRenderTarget2);
+                                 1600, 900,
+                                 1,
+                                 D3DUSAGE_RENDERTARGET,
+                                 D3DFMT_A8R8G8B8,
+                                 D3DPOOL_DEFAULT,
+                                 &g_pRenderTarget2);
+    assert(hResult == S_OK);
+
+    hResult = D3DXCreateTexture(g_pd3dDevice,
+                                 1600, 900,
+                                 1,
+                                 D3DUSAGE_RENDERTARGET,
+                                 D3DFMT_A8R8G8B8,
+                                 D3DPOOL_DEFAULT,
+                                 &g_pRenderTarget3);
     assert(hResult == S_OK);
 
     // フルスクリーンクアッドの頂宣言
@@ -366,6 +376,7 @@ void Cleanup()
     // 追加: 解放漏れ防止
     SAFE_RELEASE(g_pRenderTarget);
     SAFE_RELEASE(g_pRenderTarget2);
+    SAFE_RELEASE(g_pRenderTarget3);
     SAFE_RELEASE(g_pQuadDecl);
     SAFE_RELEASE(g_pSprite);
 
@@ -382,15 +393,18 @@ void RenderPass1()
     hResult = g_pd3dDevice->GetRenderTarget(0, &pOldRT0);
     assert(hResult == S_OK);
 
-    // 2 枚の RT サーフェスを取得
+    // 3 枚の RT サーフェスを取得
     LPDIRECT3DSURFACE9 pRT0 = NULL;
     LPDIRECT3DSURFACE9 pRT1 = NULL;
+    LPDIRECT3DSURFACE9 pRT2 = NULL;
     hResult = g_pRenderTarget->GetSurfaceLevel(0, &pRT0);  assert(hResult == S_OK);
     hResult = g_pRenderTarget2->GetSurfaceLevel(0, &pRT1); assert(hResult == S_OK);
+    hResult = g_pRenderTarget3->GetSurfaceLevel(0, &pRT2); assert(hResult == S_OK);
 
-    // MRT セット（スロット 0 と 1）
+    // MRT セット（スロット 0, 1, 2）
     hResult = g_pd3dDevice->SetRenderTarget(0, pRT0); assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(1, pRT1); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(2, pRT2); assert(hResult == S_OK);
 
     static float f = 0.0f;
     f += 0.025f;
@@ -470,11 +484,13 @@ void RenderPass1()
     hResult = g_pd3dDevice->EndScene(); assert(hResult == S_OK);
 
     // MRT を解除してバックバッファへ戻す
-    hResult = g_pd3dDevice->SetRenderTarget(1, NULL);   assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(2, NULL);    assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(1, NULL);    assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(0, pOldRT0); assert(hResult == S_OK);
 
     SAFE_RELEASE(pRT0);
     SAFE_RELEASE(pRT1);
+    SAFE_RELEASE(pRT2);
     SAFE_RELEASE(pOldRT0);
 }
 
@@ -503,6 +519,7 @@ void RenderPass2()
 
     hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget);  assert(hResult == S_OK);
     hResult = g_pEffect2->SetTexture("texture2", g_pRenderTarget2); assert(hResult == S_OK);
+    hResult = g_pEffect2->SetTexture("texture3", g_pRenderTarget3); assert(hResult == S_OK);
     hResult = g_pEffect2->CommitChanges();                           assert(hResult == S_OK);
 
     DrawFullscreenQuad();

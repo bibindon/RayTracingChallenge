@@ -35,13 +35,14 @@ void VertexShader1(
     outNormal = inNormal;
 }
 
-// ▼ ピクセルシェーダー：N·Lライティング + MRTのCOLOR1にグレースケールで深度を書き込む
+// ▼ ピクセルシェーダー：N·Lライティング + MRTのCOLOR1に深度、COLOR2に法線を書き込む
 void PixelShaderMRT(
     in float2 inTexCoord0 : TEXCOORD0,
     in float inDepth01 : TEXCOORD1,
     in float3 inNormal : TEXCOORD2,
     out float4 outColor0 : COLOR0,
-    out float4 outColor1 : COLOR1)
+    out float4 outColor1 : COLOR1,
+    out float4 outColor2 : COLOR2)
 {
     float4 baseColor = float4(0.5, 0.5, 0.5, 1.0);
 
@@ -60,6 +61,9 @@ void PixelShaderMRT(
     // 近いほど黒、遠いほど白
     float d = inDepth01;
     outColor1 = float4(d, d, d, 1.0);
+
+    // 法線を [0,1] にエンコードして書き込む
+    outColor2 = float4(N * 0.5 + 0.5, 1.0);
 }
 
 // ==== 追加: MRT を使うテクニック ====

@@ -193,9 +193,9 @@ void InitD3D(HWND hWnd)
 
     LPCTSTR meshFiles[NUM_MESHES] = { _T("cube_red.x"), _T("cube_green.x"), _T("cube_blue.x") };
     D3DXVECTOR3 meshPositions[NUM_MESHES] = {
-        D3DXVECTOR3( 3.0f, 0.0f, 0.0f),
-        D3DXVECTOR3(-3.0f, 0.0f, 0.0f),
-        D3DXVECTOR3( 0.0f, 0.0f, 3.0f),
+        D3DXVECTOR3( 4.0f, 0.0f, 0.0f),
+        D3DXVECTOR3(-4.0f, 0.0f, 0.0f),
+        D3DXVECTOR3( 0.0f, 0.0f, 4.0f),
     };
 
     for (int m = 0; m < NUM_MESHES; m++)

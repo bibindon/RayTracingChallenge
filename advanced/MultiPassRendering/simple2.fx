@@ -95,7 +95,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
             // レイの長さ: ハッシュの2乗で小さい値ほど出やすくする（1～150 ピクセル）
             float rand01 = Hash(inTexCood, (float)r);
-            float randLen = 1.0 + 500.0 * rand01 * rand01 * rand01;
+            float randLen = 1.0 + 200.0 * rand01 * rand01 * rand01;
 
             // randLen ピクセル先の UV を求める
             float2 sampleUV = inTexCood + rayDir * pixelSize * randLen;

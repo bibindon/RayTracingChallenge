@@ -21,10 +21,16 @@ const int WINDOW_SIZE_H = 900;
 LPDIRECT3D9 g_pD3D = NULL;
 LPDIRECT3DDEVICE9 g_pd3dDevice = NULL;
 LPD3DXFONT g_pFont = NULL;
-LPD3DXMESH g_pMesh = NULL;
-std::vector<D3DMATERIAL9> g_pMaterials;
-std::vector<LPDIRECT3DTEXTURE9> g_pTextures;
-DWORD g_dwNumMaterials = 0;
+struct MeshData {
+    LPD3DXMESH pMesh = NULL;
+    std::vector<D3DMATERIAL9> materials;
+    std::vector<LPDIRECT3DTEXTURE9> textures;
+    DWORD dwNumMaterials = 0;
+    D3DXVECTOR3 position;
+};
+
+const int NUM_MESHES = 3;
+MeshData g_meshes[NUM_MESHES];
 LPD3DXEFFECT g_pEffect = NULL;
 bool g_bClose = false;
 
@@ -185,66 +191,70 @@ void InitD3D(HWND hWnd)
 
     assert(hResult == S_OK);
 
-    LPD3DXBUFFER pD3DXMtrlBuffer = NULL;
+    LPCTSTR meshFiles[NUM_MESHES] = { _T("cube_red.x"), _T("cube_green.x"), _T("cube_blue.x") };
+    D3DXVECTOR3 meshPositions[NUM_MESHES] = {
+        D3DXVECTOR3( 3.0f, 0.0f, 0.0f),
+        D3DXVECTOR3(-3.0f, 0.0f, 0.0f),
+        D3DXVECTOR3( 0.0f, 0.0f, 3.0f),
+    };
 
-    hResult = D3DXLoadMeshFromX(_T("cube.x"),
-                                D3DXMESH_SYSTEMMEM,
-                                g_pd3dDevice,
-                                NULL,
-                                &pD3DXMtrlBuffer,
-                                NULL,
-                                &g_dwNumMaterials,
-                                &g_pMesh);
-
-    assert(hResult == S_OK);
-
-    D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
-    g_pMaterials.resize(g_dwNumMaterials);
-    g_pTextures.resize(g_dwNumMaterials);
-
-    for (DWORD i = 0; i < g_dwNumMaterials; i++)
+    for (int m = 0; m < NUM_MESHES; m++)
     {
-        g_pMaterials[i] = d3dxMaterials[i].MatD3D;
-        g_pMaterials[i].Ambient = g_pMaterials[i].Diffuse;
-        g_pTextures[i] = NULL;
-        
-        //--------------------------------------------------------------
-        // Unicode文字セットでもマルチバイト文字セットでも
-        // "d3dxMaterials[i].pTextureFilename"はマルチバイト文字セットになる。
-        // 
-        // 一方で、D3DXCreateTextureFromFileはプロジェクト設定で
-        // Unicode文字セットかマルチバイト文字セットか変わる。
-        //--------------------------------------------------------------
+        g_meshes[m].position = meshPositions[m];
 
-        std::string pTexPath(d3dxMaterials[i].pTextureFilename);
+        LPD3DXBUFFER pD3DXMtrlBuffer = NULL;
 
-        if (!pTexPath.empty())
+        hResult = D3DXLoadMeshFromX(meshFiles[m],
+                                     D3DXMESH_SYSTEMMEM,
+                                     g_pd3dDevice,
+                                     NULL,
+                                     &pD3DXMtrlBuffer,
+                                     NULL,
+                                     &g_meshes[m].dwNumMaterials,
+                                     &g_meshes[m].pMesh);
+
+        assert(hResult == S_OK);
+
+        D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
+        g_meshes[m].materials.resize(g_meshes[m].dwNumMaterials);
+        g_meshes[m].textures.resize(g_meshes[m].dwNumMaterials);
+
+        for (DWORD i = 0; i < g_meshes[m].dwNumMaterials; i++)
         {
-            bool bUnicode = false;
+            g_meshes[m].materials[i] = d3dxMaterials[i].MatD3D;
+            g_meshes[m].materials[i].Ambient = g_meshes[m].materials[i].Diffuse;
+            g_meshes[m].textures[i] = NULL;
+
+            std::string pTexPath(d3dxMaterials[i].pTextureFilename);
+
+            if (!pTexPath.empty())
+            {
+                bool bUnicode = false;
 
 #ifdef UNICODE
-            bUnicode = true;
+                bUnicode = true;
 #endif
 
-            if (!bUnicode)
-            {
-                hResult = D3DXCreateTextureFromFileA(g_pd3dDevice, pTexPath.c_str(), &g_pTextures[i]);
-                assert(hResult == S_OK);
-            }
-            else
-            {
-                int len = MultiByteToWideChar(CP_ACP, 0, pTexPath.c_str(), -1, nullptr, 0);
-                std::wstring pTexPathW(len, 0);
-                MultiByteToWideChar(CP_ACP, 0, pTexPath.c_str(), -1, &pTexPathW[0], len);
+                if (!bUnicode)
+                {
+                    hResult = D3DXCreateTextureFromFileA(g_pd3dDevice, pTexPath.c_str(), &g_meshes[m].textures[i]);
+                    assert(hResult == S_OK);
+                }
+                else
+                {
+                    int len = MultiByteToWideChar(CP_ACP, 0, pTexPath.c_str(), -1, nullptr, 0);
+                    std::wstring pTexPathW(len, 0);
+                    MultiByteToWideChar(CP_ACP, 0, pTexPath.c_str(), -1, &pTexPathW[0], len);
 
-                hResult = D3DXCreateTextureFromFileW(g_pd3dDevice, pTexPathW.c_str(), &g_pTextures[i]);
-                assert(hResult == S_OK);
+                    hResult = D3DXCreateTextureFromFileW(g_pd3dDevice, pTexPathW.c_str(), &g_meshes[m].textures[i]);
+                    assert(hResult == S_OK);
+                }
             }
         }
-    }
 
-    hResult = pD3DXMtrlBuffer->Release();
-    assert(hResult == S_OK);
+        hResult = pD3DXMtrlBuffer->Release();
+        assert(hResult == S_OK);
+    }
 
     hResult = D3DXCreateEffectFromFile(g_pd3dDevice,
                                        _T("simple.fx"),
@@ -260,12 +270,14 @@ void InitD3D(HWND hWnd)
 
 void Cleanup()
 {
-    for (auto& texture : g_pTextures)
+    for (int m = 0; m < NUM_MESHES; m++)
     {
-        SAFE_RELEASE(texture);
+        for (auto& texture : g_meshes[m].textures)
+        {
+            SAFE_RELEASE(texture);
+        }
+        SAFE_RELEASE(g_meshes[m].pMesh);
     }
-
-    SAFE_RELEASE(g_pMesh);
     SAFE_RELEASE(g_pEffect);
     SAFE_RELEASE(g_pFont);
     SAFE_RELEASE(g_pd3dDevice);
@@ -277,7 +289,7 @@ void Render()
     HRESULT hResult = E_FAIL;
 
     static float f = 0.0f;
-    f += 0.025f;
+    f += 0.01f;
 
     D3DXMATRIX mat;
     D3DXMATRIX View, Proj;
@@ -292,18 +304,12 @@ void Render()
     D3DXVECTOR3 vec2(0, 0, 0);
     D3DXVECTOR3 vec3(0, 1, 0);
     D3DXMatrixLookAtLH(&View, &vec1, &vec2, &vec3);
-    D3DXMatrixIdentity(&mat);
-    mat = mat * View * Proj;
-
-    hResult = g_pEffect->SetMatrix("g_matWorldViewProj", &mat);
-    assert(hResult == S_OK);
-
     hResult = g_pd3dDevice->Clear(0,
-                                  NULL,
-                                  D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-                                  D3DCOLOR_XRGB(100, 100, 100),
-                                  1.0f,
-                                  0);
+                                   NULL,
+                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+                                   D3DCOLOR_XRGB(100, 100, 100),
+                                   1.0f,
+                                   0);
 
     assert(hResult == S_OK);
 
@@ -324,16 +330,29 @@ void Render()
     hResult = g_pEffect->BeginPass(0);
     assert(hResult == S_OK);
 
-    for (DWORD i = 0; i < g_dwNumMaterials; i++)
+    for (int m = 0; m < NUM_MESHES; m++)
     {
-        hResult = g_pEffect->SetTexture("texture1", g_pTextures[i]);
+        D3DXMATRIX World;
+        D3DXMatrixTranslation(&World,
+                              g_meshes[m].position.x,
+                              g_meshes[m].position.y,
+                              g_meshes[m].position.z);
+        mat = World * View * Proj;
+
+        hResult = g_pEffect->SetMatrix("g_matWorldViewProj", &mat);
         assert(hResult == S_OK);
 
-        hResult = g_pEffect->CommitChanges();
-        assert(hResult == S_OK);
+        for (DWORD i = 0; i < g_meshes[m].dwNumMaterials; i++)
+        {
+            hResult = g_pEffect->SetTexture("texture1", g_meshes[m].textures[i]);
+            assert(hResult == S_OK);
 
-        hResult = g_pMesh->DrawSubset(i);
-        assert(hResult == S_OK);
+            hResult = g_pEffect->CommitChanges();
+            assert(hResult == S_OK);
+
+            hResult = g_meshes[m].pMesh->DrawSubset(i);
+            assert(hResult == S_OK);
+        }
     }
 
     hResult = g_pEffect->EndPass();

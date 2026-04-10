@@ -419,7 +419,7 @@ void RenderPass1()
                                D3DXToRadian(45),
                                1600.0f / 900.0f,
                                1.0f,
-                               10000.0f);
+                               100.0f);
 
     D3DXVECTOR3 eye(g_fCameraDistance * sinf(f), 5, -g_fCameraDistance * cosf(f));
     D3DXVECTOR3 at(0, 0, 0);

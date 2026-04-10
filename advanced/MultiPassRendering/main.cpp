@@ -62,6 +62,8 @@ static void RenderPass1();
 static void RenderPass2();
 static void DrawFullscreenQuad();
 
+static const float g_fCameraDistance = 12.0f;
+
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern int WINAPI _tWinMain(_In_ HINSTANCE hInstance,
@@ -417,7 +419,7 @@ void RenderPass1()
                                1.0f,
                                10000.0f);
 
-    D3DXVECTOR3 eye(10 * sinf(f), 5, -10 * cosf(f));
+    D3DXVECTOR3 eye(g_fCameraDistance * sinf(f), 5, -g_fCameraDistance * cosf(f));
     D3DXVECTOR3 at(0, 0, 0);
     D3DXVECTOR3 up(0, 1, 0);
     D3DXMatrixLookAtLH(&View, &eye, &at, &up);

@@ -93,8 +93,9 @@ void PixelShader1(in float4 inPosition    : POSITION,
             float angle = -1.5708 + 3.1416 * ((float)r / (float)(RAY_COUNT - 1));
             float2 rayDir = RotateDir(marchDir, angle);
 
-            // レイの長さをピクセル座標ベースのハッシュでランダム化（50～150 ピクセル）
-            float randLen = 50.0 + 100.0 * Hash(inTexCood, (float)r);
+            // レイの長さ: ハッシュの2乗で小さい値ほど出やすくする（1～150 ピクセル）
+            float rand01 = Hash(inTexCood, (float)r);
+            float randLen = 1.0 + 500.0 * rand01 * rand01 * rand01;
 
             // randLen ピクセル先の UV を求める
             float2 sampleUV = inTexCood + rayDir * pixelSize * randLen;
@@ -107,13 +108,16 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
                 // 深度差に基づくソフトな判定（手前にあるほど強く反映）
                 float depthDiff = depth - sampleDepth;
-                if (depthDiff > 0.001)
+                if (depthDiff > 0.00001)
                 {
                     // 深度差が大きいほど強く、smoothstep で滑らかに立ち上げる
-                    float softHit = smoothstep(0.001, 0.05, depthDiff);
+                    float softHit = smoothstep(0.00001, 0.5, depthDiff);
 
-                    // 距離が近いほど重みを高くする（1/距離）
-                    float weight = softHit / randLen;
+                    float weight = softHit;
+                    if (true)
+                    {
+                        weight = depthDiff;
+                    }
                     accumColor += tex2Dlod(textureSampler, float4(sampleUV, 0, 0)) * weight;
                     hitWeight += weight;
                 }

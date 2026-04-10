@@ -501,8 +501,9 @@ void RenderPass2()
     hResult = g_pEffect2->Begin(&numPass, 0);               assert(hResult == S_OK);
     hResult = g_pEffect2->BeginPass(0);                     assert(hResult == S_OK);
 
-    hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget); assert(hResult == S_OK);
-    hResult = g_pEffect2->CommitChanges();                          assert(hResult == S_OK);
+    hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget);  assert(hResult == S_OK);
+    hResult = g_pEffect2->SetTexture("texture2", g_pRenderTarget2); assert(hResult == S_OK);
+    hResult = g_pEffect2->CommitChanges();                           assert(hResult == S_OK);
 
     DrawFullscreenQuad();
 

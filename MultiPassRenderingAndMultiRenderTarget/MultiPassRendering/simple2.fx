@@ -12,6 +12,14 @@ sampler textureSampler = sampler_state {
     MagFilter = POINT;
 };
 
+texture texture2;
+sampler depthSampler = sampler_state {
+    Texture = (texture2);
+    MipFilter = NONE;
+    MinFilter = POINT;
+    MagFilter = POINT;
+};
+
 void VertexShader1(in  float4 inPosition  : POSITION,
                    in  float2 inTexCood   : TEXCOORD0,
 
@@ -29,6 +37,9 @@ void PixelShader1(in float4 inPosition    : POSITION,
 {
     float4 workColor = (float4)0;
     workColor = tex2D(textureSampler, inTexCood);
+
+    // 深度テクスチャからサンプリング（0=近, 1=遠）
+    float depth = tex2D(depthSampler, inTexCood).r;
 
     // 試しに彩度を上げたり下げたりしてみる
     if (false)
@@ -60,7 +71,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     }
 
     outColor = workColor;
-    
+
 }
 
 technique Technique1

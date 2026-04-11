@@ -1,5 +1,5 @@
 bool g_bEnableRayTracing = true;
-float g_indirectLightIntensity = 0.5f;
+float g_indirectLightIntensity = 0.3f;
 
 texture texture1;
 sampler textureSampler = sampler_state {
@@ -93,6 +93,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
             float distanceBoost = 1.0 + (1.0 - rayLength / 800.0);
             float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
             float luminanceWeight = 0.25 + dot(hitColor.rgb, float3(0.299, 0.587, 0.114));
+            luminanceWeight = 1.f;
             float sampleWeight = (distanceBoost * luminanceWeight) / (1.0 + depthDiff);
             accumulatedColor += hitColor * sampleWeight;
             accumulatedWeight += sampleWeight;

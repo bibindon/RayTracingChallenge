@@ -54,25 +54,19 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float2 marchDir = float2(normal.x, -normal.y);
     float dirLen = length(marchDir);
 
-    if (dirLen > 0.001)
+    marchDir = marchDir / dirLen;
+
+    float rayLength = 100.0;
+    float2 sampleUV = inTexCood + marchDir * pixelSize * rayLength;
+
+    if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
+        sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
     {
-        marchDir = marchDir / dirLen;
+        float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
+        float depthDiff = depth - sampleDepth;
 
-        float rayLength = 150.0;
-        float2 sampleUV = inTexCood + marchDir * pixelSize * rayLength;
-
-        if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
-            sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
-        {
-            float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
-            float depthDiff = depth - sampleDepth;
-
-            if (depthDiff > 0.00001)
-            {
-                float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
-                workColor = lerp(workColor, hitColor, 0.5);
-            }
-        }
+        float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
+        workColor = lerp(workColor, hitColor, 0.25);
     }
 
     outColor = workColor;

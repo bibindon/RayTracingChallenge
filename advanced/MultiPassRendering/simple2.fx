@@ -3,6 +3,7 @@ float4 g_lightNormal = { 0.3f, 1.0f, 0.5f, 0.0f };
 float3 g_ambient = { 0.3f, 0.3f, 0.3f };
 
 bool g_bUseTexture = true;
+float g_indirectLightIntensity = 0.5f;
 
 texture texture1;
 sampler textureSampler = sampler_state {
@@ -76,7 +77,8 @@ void PixelShader1(in float4 inPosition    : POSITION,
             }
         }
 
-        workColor = accumulatedColor / accumulatedWeight;
+        float4 indirectColor = accumulatedColor / accumulatedWeight;
+        workColor = lerp(workColor, indirectColor, saturate(g_indirectLightIntensity));
     }
 
     outColor = workColor;

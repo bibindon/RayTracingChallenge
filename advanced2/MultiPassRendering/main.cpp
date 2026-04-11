@@ -226,9 +226,9 @@ void InitD3D(HWND hWnd)
     MeshLoadInfo loadInfos[] =
     {
         { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f) },
-        { _T("cube_white.x"),     D3DXVECTOR3( 2.0f,   0.0f, -2.0f) },
-        { _T("cube_blue.x"),      D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
+        { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
         { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.0f,  2.0f) },
+        { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f) },
         { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -8.0f,  0.0f) },
@@ -313,7 +313,7 @@ void InitD3D(HWND hWnd)
     assert(hResult == S_OK);
 
     hResult = D3DXCreateSphere(g_pd3dDevice,
-                               1200.f,
+                               500.f,
                                32,
                                32,
                                &g_pMeshSphere,
@@ -421,7 +421,7 @@ void RenderPass1()
                                D3DXToRadian(45),
                                1600.0f / 900.0f,
                                1.0f,
-                               100.0f);
+                               1000.0f);
 
     D3DXVECTOR3 eye(g_fCameraDistance * sinf(f), 3, -g_fCameraDistance * cosf(f));
     D3DXVECTOR3 at(0, 1, 0);
@@ -429,7 +429,7 @@ void RenderPass1()
     D3DXMatrixLookAtLH(&View, &eye, &at, &up);
     hResult = g_pd3dDevice->Clear(0, NULL,
                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-                                  D3DCOLOR_XRGB(135, 206, 235),
+                                  D3DCOLOR_XRGB(0, 0, 0),
                                   1.0f, 0);
     assert(hResult == S_OK);
 

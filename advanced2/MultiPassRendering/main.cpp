@@ -313,7 +313,7 @@ void InitD3D(HWND hWnd)
     assert(hResult == S_OK);
 
     hResult = D3DXCreateSphere(g_pd3dDevice,
-                               120.f,
+                               1200.f,
                                32,
                                32,
                                &g_pMeshSphere,

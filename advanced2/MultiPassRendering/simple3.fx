@@ -1,10 +1,32 @@
+bool g_bEnableSSAO = true;
+float g_occlusionDarkenStrength = 10.35f;
+float g_occlusionDepthBias = 0.000015f;
+
 texture texture1;
 sampler textureSampler = sampler_state
 {
     Texture = (texture1);
     MipFilter = NONE;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+    MinFilter = POINT;
+    MagFilter = POINT;
+};
+
+texture texture2;
+sampler depthSampler = sampler_state
+{
+    Texture = (texture2);
+    MipFilter = NONE;
+    MinFilter = POINT;
+    MagFilter = POINT;
+};
+
+texture texture3;
+sampler normalSampler = sampler_state
+{
+    Texture = (texture3);
+    MipFilter = NONE;
+    MinFilter = POINT;
+    MagFilter = POINT;
 };
 
 void VertexShader1(in  float4 inPosition  : POSITION,
@@ -19,43 +41,66 @@ void VertexShader1(in  float4 inPosition  : POSITION,
 void PixelShader1(in float2 inTexCood : TEXCOORD0,
                   out float4 outColor : COLOR)
 {
+    float4 workColor = tex2D(textureSampler, inTexCood);
+    float depth = tex2D(depthSampler, inTexCood).r;
+    float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
+
+    if (!g_bEnableSSAO || depth >= 0.98)
+    {
+        outColor = workColor;
+        return;
+    }
+
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
-
-    if (false)
+    float2 marchDir = float2(normal.x, -normal.y);
+    float dirLen = length(marchDir);
+    if (dirLen <= 0.0001)
     {
-        float4 color =
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0, -2.0)) * ( 1.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0, -2.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0, -2.0)) * ( 6.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0, -2.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0, -2.0)) * ( 1.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0, -1.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0, -1.0)) * (16.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0, -1.0)) * (24.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0, -1.0)) * (16.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0, -1.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  0.0)) * ( 6.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  0.0)) * (24.0 / 256.0) +
-            tex2D(textureSampler, inTexCood)                                  * (36.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  0.0)) * (24.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  0.0)) * ( 6.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  1.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  1.0)) * (16.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0,  1.0)) * (24.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  1.0)) * (16.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  1.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  2.0)) * ( 1.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  2.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0,  2.0)) * ( 6.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  2.0)) * ( 4.0 / 256.0) +
-            tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  2.0)) * ( 1.0 / 256.0);
+        outColor = workColor;
+        return;
+    }
 
-        outColor = color;
-    }
-    else
+    marchDir = marchDir / dirLen;
+
+    float occlusion = 0.0;
+
+    for (int i = 0; i < 32; ++i)
     {
-        outColor = tex2D(textureSampler, inTexCood);
+        float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
+                                   float2(12.9898, 78.233))) * 43758.5453);
+        float angleNoise = frac(sin(dot(inTexCood + float2(i * 0.719, i * 0.183),
+                                        float2(39.3468, 11.1351))) * 24634.6345);
+
+        float rayLength = noise * noise * 200.0;
+
+        float angleOffset = angleNoise * 2.0 - 1.0;
+        angleOffset = angleOffset * abs(angleOffset);
+        angleOffset *= 1.5707963;
+
+        float sinTheta = sin(angleOffset);
+        float cosTheta = cos(angleOffset);
+        float2 sampleDir = float2(
+            marchDir.x * cosTheta - marchDir.y * sinTheta,
+            marchDir.x * sinTheta + marchDir.y * cosTheta);
+
+        float2 sampleUV = inTexCood + sampleDir * pixelSize * rayLength;
+
+        if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
+            sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
+        {
+            float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
+            float depthDiff = abs(depth - sampleDepth);
+            float sampleWeight = 1.0 / (1.0 + depthDiff);
+
+            if (sampleDepth + g_occlusionDepthBias < depth)
+            {
+                occlusion += sampleWeight;
+            }
+        }
     }
+
+    float ao = 1.0 - saturate((occlusion / 32.0) * (1.0 / max(g_occlusionDarkenStrength, 0.0001)));
+    outColor = float4(workColor.rgb * ao, workColor.a);
 }
 
 technique Technique1

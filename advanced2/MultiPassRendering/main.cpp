@@ -42,6 +42,7 @@ LPD3DXEFFECT g_pEffect3 = NULL;
 
 bool g_bClose = false;
 bool g_bRayTracingEnabled = true;
+bool g_bSSAOEnabled = true;
 
 // === 変更: RT を 3 枚用意 ===
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
@@ -232,7 +233,7 @@ void InitD3D(HWND hWnd)
     {
         { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f) },
         { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
-        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.0f,  2.0f) },
+        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f) },
         { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f) },
@@ -335,7 +336,7 @@ void InitD3D(HWND hWnd)
                                NULL);
     assert(hResult == S_OK);
 
-    // === 変更: RT を 2 枚作成（両方 A8R8G8B8） ===
+    // RT0: color, RT1: high-precision depth, RT2: normal, RT3: post-process
     hResult = D3DXCreateTexture(g_pd3dDevice,
                                 1600, 900,
                                 1,
@@ -349,7 +350,7 @@ void InitD3D(HWND hWnd)
                                  1600, 900,
                                  1,
                                  D3DUSAGE_RENDERTARGET,
-                                 D3DFMT_A8R8G8B8,
+                                 D3DFMT_A16B16G16R16F,
                                  D3DPOOL_DEFAULT,
                                  &g_pRenderTarget2);
     assert(hResult == S_OK);
@@ -447,7 +448,7 @@ void RenderPass1()
                                D3DXToRadian(45),
                                1600.0f / 900.0f,
                                1.0f,
-                               1000.0f);
+                               100.0f);
 
     D3DXVECTOR3 eye(g_fCameraDistance * sinf(f), 3, -g_fCameraDistance * cosf(f));
     D3DXVECTOR3 at(0, 1, 0);
@@ -640,6 +641,12 @@ void RenderPass3()
     assert(hResult == S_OK);
 
     hResult = g_pEffect3->SetTexture("texture1", g_pRenderTarget4);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetTexture("texture2", g_pRenderTarget2);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetTexture("texture3", g_pRenderTarget3);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetBool("g_bEnableSSAO", g_bSSAOEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
     hResult = g_pEffect3->CommitChanges();
     assert(hResult == S_OK);

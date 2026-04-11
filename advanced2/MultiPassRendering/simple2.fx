@@ -64,7 +64,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float4 accumulatedColor = workColor;
     float accumulatedWeight = 1.0;
 
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < 128; ++i)
     {
         float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
                                    float2(12.9898, 78.233))) * 43758.5453);
@@ -90,8 +90,8 @@ void PixelShader1(in float4 inPosition    : POSITION,
         {
             float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
             float depthDiff = abs(depth - sampleDepth);
-            float distanceWeight = 1.0 - (rayLength / 800.0);
-            float sampleWeight = distanceWeight / (1.0 + depthDiff);
+            float distanceBoost = 1.0 + (1.0 - rayLength / 800.0);
+            float sampleWeight = distanceBoost / (1.0 + depthDiff);
             float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
             accumulatedColor += hitColor * sampleWeight;
             accumulatedWeight += sampleWeight;

@@ -1,5 +1,5 @@
 bool g_bEnableSSAO = true;
-float g_occlusionDarkenStrength = 10.35f;
+float g_occlusionDarkenStrength = 1.35f;
 float g_occlusionDepthBias = 0.000015f;
 
 texture texture1;

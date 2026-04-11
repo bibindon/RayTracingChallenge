@@ -434,10 +434,9 @@ void RenderPass1()
     hResult = g_pRenderTarget2->GetSurfaceLevel(0, &pRT1); assert(hResult == S_OK);
     hResult = g_pRenderTarget3->GetSurfaceLevel(0, &pRT2); assert(hResult == S_OK);
 
-    // MRT セット（スロット 0, 1, 2）
     hResult = g_pd3dDevice->SetRenderTarget(0, pRT0); assert(hResult == S_OK);
-    hResult = g_pd3dDevice->SetRenderTarget(1, pRT1); assert(hResult == S_OK);
-    hResult = g_pd3dDevice->SetRenderTarget(2, pRT2); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(1, NULL); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(2, NULL); assert(hResult == S_OK);
 
     static float f = 0.0f;
     f += g_fCameraMoveSpeed;
@@ -456,9 +455,27 @@ void RenderPass1()
     D3DXMatrixLookAtLH(&View, &eye, &at, &up);
     hResult = g_pd3dDevice->Clear(0, NULL,
                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-                                  D3DCOLOR_XRGB(0, 0, 0),
+                                  D3DCOLOR_XRGB(135, 206, 235),
                                   1.0f, 0);
     assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderTarget(0, pRT1); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->Clear(0, NULL,
+                                  D3DCLEAR_TARGET,
+                                  D3DCOLOR_ARGB(255, 255, 255, 255),
+                                  1.0f, 0);
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderTarget(0, pRT2); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->Clear(0, NULL,
+                                  D3DCLEAR_TARGET,
+                                  D3DCOLOR_ARGB(255, 128, 128, 128),
+                                  1.0f, 0);
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderTarget(0, pRT0); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(1, pRT1); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(2, pRT2); assert(hResult == S_OK);
 
     hResult = g_pd3dDevice->BeginScene(); assert(hResult == S_OK);
 

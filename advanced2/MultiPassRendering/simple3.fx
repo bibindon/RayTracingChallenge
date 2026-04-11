@@ -94,7 +94,8 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
         {
             float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
             float depthDiff = abs(depth - sampleDepth);
-            float sampleWeight = 1.0 / (1.0 + depthDiff * g_occlusionDepthFalloff);
+            float distanceWeight = 1.0 - (rayLength / 200.0);
+            float sampleWeight = distanceWeight / (1.0 + depthDiff * g_occlusionDepthFalloff);
 
             if (sampleDepth + g_occlusionDepthBias < depth)
             {

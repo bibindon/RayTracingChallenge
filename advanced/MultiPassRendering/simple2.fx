@@ -44,8 +44,6 @@ void PixelShader1(in float4 inPosition    : POSITION,
                   out float4 outColor     : COLOR)
 {
     float4 workColor = tex2D(textureSampler, inTexCood);
-
-    float depth = tex2D(depthSampler, inTexCood).r;
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
 
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
@@ -53,20 +51,32 @@ void PixelShader1(in float4 inPosition    : POSITION,
     // Convert the view-space normal to screen-space motion.
     float2 marchDir = float2(normal.x, -normal.y);
     float dirLen = length(marchDir);
-
-    marchDir = marchDir / dirLen;
-
-    float rayLength = 100.0;
-    float2 sampleUV = inTexCood + marchDir * pixelSize * rayLength;
-
-    if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
-        sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
+    if (dirLen > 0.0001)
     {
-        float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
-        float depthDiff = depth - sampleDepth;
+        marchDir = marchDir / dirLen;
 
-        float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
-        workColor = lerp(workColor, hitColor, 0.25);
+        float4 accumulatedColor = workColor;
+        float accumulatedWeight = 1.0;
+
+        for (int i = 0; i < 32; ++i)
+        {
+            float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
+                                       float2(12.9898, 78.233))) * 43758.5453);
+
+            // Smaller values occur more often by squaring the random number.
+            float rayLength = noise * noise * 200.0;
+            float2 sampleUV = inTexCood + marchDir * pixelSize * rayLength;
+
+            if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
+                sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
+            {
+                float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
+                accumulatedColor += hitColor;
+                accumulatedWeight += 1.0;
+            }
+        }
+
+        workColor = accumulatedColor / accumulatedWeight;
     }
 
     outColor = workColor;

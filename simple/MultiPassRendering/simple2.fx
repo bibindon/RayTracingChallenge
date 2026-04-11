@@ -62,9 +62,6 @@ void PixelShader1(in float4 inPosition    : POSITION,
     if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
         sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
     {
-        float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
-        float depthDiff = depth - sampleDepth;
-
         float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
         workColor = lerp(workColor, hitColor, 0.25);
     }

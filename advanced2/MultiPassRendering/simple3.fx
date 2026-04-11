@@ -22,15 +22,31 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
 
     float4 color =
-        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0, -1.0)) * (1.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0, -1.0)) * (2.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0, -1.0)) * (1.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  0.0)) * (2.0 / 16.0) +
-        tex2D(textureSampler, inTexCood)                                  * (4.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  0.0)) * (2.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  1.0)) * (1.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0,  1.0)) * (2.0 / 16.0) +
-        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  1.0)) * (1.0 / 16.0);
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0, -2.0)) * ( 1.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0, -2.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0, -2.0)) * ( 6.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0, -2.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0, -2.0)) * ( 1.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0, -1.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0, -1.0)) * (16.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0, -1.0)) * (24.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0, -1.0)) * (16.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0, -1.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  0.0)) * ( 6.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  0.0)) * (24.0 / 256.0) +
+        tex2D(textureSampler, inTexCood)                                  * (36.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  0.0)) * (24.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  0.0)) * ( 6.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  1.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  1.0)) * (16.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0,  1.0)) * (24.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  1.0)) * (16.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  1.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-2.0,  2.0)) * ( 1.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2(-1.0,  2.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 0.0,  2.0)) * ( 6.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 1.0,  2.0)) * ( 4.0 / 256.0) +
+        tex2D(textureSampler, inTexCood + pixelSize * float2( 2.0,  2.0)) * ( 1.0 / 256.0);
 
     outColor = color;
 }

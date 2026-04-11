@@ -44,7 +44,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
 {
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
     float2 halfPixel = pixelSize * 0.5;
-    float2 baseUV = clamp(inTexCood, halfPixel, 1.0 - halfPixel);
+    float2 baseUV = clamp(inTexCood + halfPixel, halfPixel, 1.0 - halfPixel);
 
     float4 workColor = tex2D(textureSampler, baseUV);
     float depth = tex2D(depthSampler, baseUV).r;

@@ -1,5 +1,5 @@
 bool g_bEnableRayTracing = true;
-float g_indirectLightIntensity = 0.6f;
+float g_indirectLightIntensity = 0.5f;
 
 texture texture1;
 sampler textureSampler = sampler_state {
@@ -38,6 +38,9 @@ void PixelShader1(in float4 inPosition    : POSITION,
                   in float2 inTexCood     : TEXCOORD0,
                   out float4 outColor     : COLOR)
 {
+    float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
+    inTexCood += pixelSize * 0.5f;
+
     float4 workColor = tex2D(textureSampler, inTexCood);
     float depth = tex2D(depthSampler, inTexCood).r;
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
@@ -48,7 +51,6 @@ void PixelShader1(in float4 inPosition    : POSITION,
         return;
     }
 
-    float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
     float2 marchDir = float2(normal.x, -normal.y);
     float dirLen = length(marchDir);
     if (dirLen <= 0.0001)

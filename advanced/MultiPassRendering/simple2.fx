@@ -45,6 +45,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
                   out float4 outColor     : COLOR)
 {
     float4 workColor = tex2D(textureSampler, inTexCood);
+    float depth = tex2D(depthSampler, inTexCood).r;
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
 
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
@@ -85,9 +86,12 @@ void PixelShader1(in float4 inPosition    : POSITION,
             if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
                 sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
             {
+                float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
+                float depthDiff = abs(depth - sampleDepth);
+                float sampleWeight = 1.0 / (1.0 + depthDiff * 10.0);
                 float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
-                accumulatedColor += hitColor;
-                accumulatedWeight += 1.0;
+                accumulatedColor += hitColor * sampleWeight;
+                accumulatedWeight += sampleWeight;
             }
         }
 

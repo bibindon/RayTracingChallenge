@@ -44,6 +44,7 @@ LPD3DXEFFECT g_pEffect3 = NULL;
 bool g_bClose = false;
 bool g_bRayTracingEnabled = true;
 bool g_bSSAOEnabled = true;
+int g_nBackgroundMode = 0;
 
 // === 変更: RT を 3 枚用意 ===
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
@@ -468,9 +469,25 @@ void RenderPass1()
     D3DXVECTOR3 at(0, 1, 0);
     D3DXVECTOR3 up(0, 1, 0);
     D3DXMatrixLookAtLH(&View, &eye, &at, &up);
+    const int skyR = 205;
+    const int skyG = 230;
+    const int skyB = 250;
+    D3DCOLOR backgroundColor = D3DCOLOR_XRGB(200, 105, 0);
+    if (g_nBackgroundMode == 1)
+    {
+        backgroundColor = D3DCOLOR_XRGB(skyR, skyG, skyB);
+    }
+    else if (g_nBackgroundMode == 2)
+    {
+        float t = (sinf(f * 4.5f) + 1.0f) * 0.5f;
+        int r = (int)(200.0f + (skyR - 200.0f) * t);
+        int g = (int)(105.0f + (skyG - 105.0f) * t);
+        int b = (int)(0.0f + (skyB - 0.0f) * t);
+        backgroundColor = D3DCOLOR_XRGB(r, g, b);
+    }
     hResult = g_pd3dDevice->Clear(0, NULL,
                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-                                  D3DCOLOR_XRGB(135, 206, 235),
+                                  backgroundColor,
                                   1.0f, 0);
     assert(hResult == S_OK);
 
@@ -736,6 +753,11 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (wParam == '2')
         {
             g_bSSAOEnabled = !g_bSSAOEnabled;
+            return 0;
+        }
+        if (wParam == '3')
+        {
+            g_nBackgroundMode = (g_nBackgroundMode + 1) % 3;
             return 0;
         }
         break;

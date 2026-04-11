@@ -41,6 +41,7 @@ LPD3DXEFFECT g_pEffect2 = NULL;
 LPD3DXEFFECT g_pEffect3 = NULL;
 
 bool g_bClose = false;
+bool g_bRayTracingEnabled = true;
 
 // === 変更: RT を 3 枚用意 ===
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
@@ -571,6 +572,8 @@ void RenderPass2()
     hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget);  assert(hResult == S_OK);
     hResult = g_pEffect2->SetTexture("texture2", g_pRenderTarget2); assert(hResult == S_OK);
     hResult = g_pEffect2->SetTexture("texture3", g_pRenderTarget3); assert(hResult == S_OK);
+    hResult = g_pEffect2->SetBool("g_bEnableRayTracing", g_bRayTracingEnabled ? TRUE : FALSE);
+    assert(hResult == S_OK);
     hResult = g_pEffect2->CommitChanges();                           assert(hResult == S_OK);
 
     DrawFullscreenQuad();
@@ -682,6 +685,15 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         g_bClose = true;
         return 0;
+    }
+    case WM_KEYDOWN:
+    {
+        if (wParam == 'F')
+        {
+            g_bRayTracingEnabled = !g_bRayTracingEnabled;
+            return 0;
+        }
+        break;
     }
     }
     return DefWindowProc(hWnd, msg, wParam, lParam);

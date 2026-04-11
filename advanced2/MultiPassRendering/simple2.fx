@@ -88,7 +88,8 @@ void PixelShader1(in float4 inPosition    : POSITION,
             {
                 float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
                 float depthDiff = abs(depth - sampleDepth);
-                float sampleWeight = 1.0 / (1.0 + depthDiff * 10.0);
+                float sampleWeight = 1.0 / (1.0 + depthDiff * 1.0);
+//                sampleWeight = 1.0;
                 float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
                 accumulatedColor += hitColor * sampleWeight;
                 accumulatedWeight += sampleWeight;

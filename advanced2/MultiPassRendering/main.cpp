@@ -235,6 +235,8 @@ void InitD3D(HWND hWnd)
         { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
         { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f) },
         { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f) },
+        { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   4.0f, -2.0f) },
+        { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.5f, -4.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f) },
         { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f) },
@@ -709,9 +711,14 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     case WM_KEYDOWN:
     {
-        if (wParam == 'F')
+        if (wParam == '1')
         {
             g_bRayTracingEnabled = !g_bRayTracingEnabled;
+            return 0;
+        }
+        if (wParam == '2')
+        {
+            g_bSSAOEnabled = !g_bSSAOEnabled;
             return 0;
         }
         break;

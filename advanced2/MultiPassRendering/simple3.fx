@@ -76,9 +76,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
 
         float rayLength = noise * noise * 200.0;
 
-        float angleOffset = angleNoise * 2.0 - 1.0;
-        angleOffset = angleOffset * abs(angleOffset);
-        angleOffset *= 1.5707963;
+        float angleOffset = (angleNoise * 2.0 - 1.0) * 1.5707963;
 
         float sinTheta = sin(angleOffset);
         float cosTheta = cos(angleOffset);

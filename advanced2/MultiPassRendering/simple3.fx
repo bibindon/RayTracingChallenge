@@ -1,5 +1,5 @@
 bool g_bEnableSSAO = true;
-float g_occlusionDarkenStrength = 1.35f;
+float g_occlusionDarkenStrength = 1.035f;
 float g_occlusionDepthBias = 0.000015f;
 float g_occlusionDepthFalloff = 250.0f;
 
@@ -94,7 +94,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
         {
             float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
             float depthDiff = abs(depth - sampleDepth);
-            float distanceWeight = 1.0 - (rayLength / 200.0);
+            float distanceWeight = 1.0 - (rayLength / 2000.0);
             float sampleWeight = distanceWeight / (1.0 + depthDiff * g_occlusionDepthFalloff);
 
             if (sampleDepth + g_occlusionDepthBias < depth)

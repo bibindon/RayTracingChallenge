@@ -50,6 +50,12 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
 
+    if (depth >= 0.98)
+    {
+        outColor = workColor;
+        return;
+    }
+
     // Convert the view-space normal to screen-space motion.
     float2 marchDir = float2(normal.x, -normal.y);
     float dirLen = length(marchDir);
@@ -88,8 +94,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
             {
                 float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
                 float depthDiff = abs(depth - sampleDepth);
-                float sampleWeight = 1.0 / (1.0 + depthDiff * depthDiff * depthDiff);
-//                sampleWeight = 1.0;
+                float sampleWeight = 1.0 / (1.0 + depthDiff);
                 float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
                 accumulatedColor += hitColor * sampleWeight;
                 accumulatedWeight += sampleWeight;

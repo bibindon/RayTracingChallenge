@@ -50,6 +50,13 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
     float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
 
+    // レイトレーシングしない
+    if (true)
+    {
+        outColor = workColor;
+        return;
+    }
+
     if (depth >= 0.98)
     {
         outColor = workColor;

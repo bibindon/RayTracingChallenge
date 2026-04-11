@@ -13,7 +13,7 @@
 #include <crtdbg.h>
 #include <vector>
 
-static const float g_fCameraDistance = 12.0f;
+static const float g_fCameraDistance = 15.0f;
 
 static const float g_fCameraMoveSpeed = 0.01f;
 

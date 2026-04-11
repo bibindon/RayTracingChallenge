@@ -53,16 +53,7 @@ void PixelShaderMRT(
     }
 
     // N·L ランバートライティング
-    float3 N;
-    if (true)
-    {
-        N = normalize(inNormal);
-    }
-    else
-    {
-        N = float3(0, 1, 0);
-    }
-
+    float3 N = normalize(inNormal);
     float3 L = normalize(g_lightNormal.xyz);
     float NdotL = saturate(dot(N, L));
     float3 lighting = g_ambient + (1.0 - g_ambient) * NdotL;

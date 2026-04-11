@@ -213,7 +213,7 @@ void InitD3D(HWND hWnd)
                              OUT_TT_ONLY_PRECIS,
                              CLEARTYPE_NATURAL_QUALITY,
                              FF_DONTCARE,
-                             _T("ＭＳ ゴシック"),
+                             _T("MS Gothic"),
                              &g_pFont);
     assert(hResult == S_OK);
 
@@ -313,7 +313,7 @@ void InitD3D(HWND hWnd)
     assert(hResult == S_OK);
 
     hResult = D3DXCreateSphere(g_pd3dDevice,
-                               20.f,
+                               120.f,
                                32,
                                32,
                                &g_pMeshSphere,
@@ -447,6 +447,9 @@ void RenderPass1()
     // ビュー行列をシェーダーに渡す（法線のビュー空間変換用）
     hResult = g_pEffect1->SetMatrix("g_matView", &View);
     assert(hResult == S_OK);
+    D3DXVECTOR4 defaultBaseColor(1.0f, 1.0f, 1.0f, 1.0f);
+    hResult = g_pEffect1->SetVector("g_baseColor", &defaultBaseColor);
+    assert(hResult == S_OK);
 
     UINT numPass = 0;
     hResult = g_pEffect1->Begin(&numPass, 0); assert(hResult == S_OK);
@@ -474,7 +477,7 @@ void RenderPass1()
     }
 
     // 球（テクスチャなし）
-    if (false)
+    if (true)
     {
         D3DXMATRIX matIdentity;
         D3DXMatrixIdentity(&matIdentity);
@@ -482,6 +485,9 @@ void RenderPass1()
         hResult = g_pEffect1->SetMatrix("g_matWorldViewProj", &matWVP);
         assert(hResult == S_OK);
 
+        D3DXVECTOR4 sphereBaseColor(0.53f, 0.81f, 0.92f, 1.0f);
+        hResult = g_pEffect1->SetVector("g_baseColor", &sphereBaseColor);
+        assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUseTexture", FALSE); assert(hResult == S_OK);
         hResult = g_pEffect1->SetTexture("texture1", NULL);    assert(hResult == S_OK);
         hResult = g_pEffect1->CommitChanges();                 assert(hResult == S_OK);

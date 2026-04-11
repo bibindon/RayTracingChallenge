@@ -1,6 +1,7 @@
 float4x4 g_matWorldViewProj;
 float4x4 g_matView;
 float4 g_lightNormal = { 0.3f, 1.0f, 0.5f, 0.0f };
+float4 g_baseColor = { 0.5f, 0.5f, 0.5f, 1.0f };
 float3 g_ambient = { 0.3f, 0.3f, 0.3f };
 
 bool g_bUseTexture = true;
@@ -45,7 +46,7 @@ void PixelShaderMRT(
     out float4 outColor1 : COLOR1,
     out float4 outColor2 : COLOR2)
 {
-    float4 baseColor = float4(0.5, 0.5, 0.5, 1.0);
+    float4 baseColor = g_baseColor;
 
     if (g_bUseTexture)
     {

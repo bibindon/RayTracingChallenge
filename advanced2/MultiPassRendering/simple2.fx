@@ -68,7 +68,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
                                             float2(39.3468, 11.1351))) * 24634.6345);
 
             // Smaller values occur more often by squaring the random number.
-            float rayLength = noise * noise * 200.0;
+            float rayLength = noise * noise * 800.0;
 
             // Keep directions clustered around the normal direction.
             float angleOffset = angleNoise * 2.0 - 1.0;

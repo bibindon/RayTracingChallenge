@@ -1,5 +1,5 @@
 bool g_bEnableRayTracing = true;
-float g_indirectLightIntensity = 0.4f;
+float g_indirectLightIntensity = 0.6f;
 
 texture texture1;
 sampler textureSampler = sampler_state {
@@ -42,7 +42,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float depth = tex2D(depthSampler, inTexCood).r;
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
 
-    if (!g_bEnableRayTracing || depth >= 0.98)
+    if (!g_bEnableRayTracing || depth >= 0.99)
     {
         outColor = workColor;
         return;

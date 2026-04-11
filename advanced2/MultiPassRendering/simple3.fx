@@ -42,17 +42,19 @@ void VertexShader1(in  float4 inPosition  : POSITION,
 void PixelShader1(in float2 inTexCood : TEXCOORD0,
                   out float4 outColor : COLOR)
 {
-    float4 workColor = tex2D(textureSampler, inTexCood);
-    float depth = tex2D(depthSampler, inTexCood).r;
-    float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
+    float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
+    float2 halfPixel = pixelSize * 0.5;
+    float2 baseUV = clamp(inTexCood, halfPixel, 1.0 - halfPixel);
+
+    float4 workColor = tex2D(textureSampler, baseUV);
+    float depth = tex2D(depthSampler, baseUV).r;
+    float3 normal = tex2D(normalSampler, baseUV).rgb * 2.0 - 1.0;
 
     if (!g_bEnableSSAO || depth >= 0.98)
     {
         outColor = workColor;
         return;
     }
-
-    float2 pixelSize = float2(1.0 / 1600.0, 1.0 / 900.0);
     float2 marchDir = float2(normal.x, -normal.y);
     float dirLen = length(marchDir);
     if (dirLen <= 0.0001)
@@ -84,7 +86,8 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
             marchDir.x * cosTheta - marchDir.y * sinTheta,
             marchDir.x * sinTheta + marchDir.y * cosTheta);
 
-        float2 sampleUV = inTexCood + sampleDir * pixelSize * rayLength;
+        float2 sampleUV = baseUV + sampleDir * pixelSize * rayLength;
+        sampleUV = clamp(sampleUV, halfPixel, 1.0 - halfPixel);
 
         if (sampleUV.x >= 0.0 && sampleUV.x <= 1.0 &&
             sampleUV.y >= 0.0 && sampleUV.y <= 1.0)

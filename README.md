@@ -1,5 +1,5 @@
 
-https://github.com/user-attachments/assets/4ac4eb2a-4d1e-47bf-bd1b-72f7fb4529e8
+https://github.com/user-attachments/assets/51a03502-8b73-421b-9666-2c41ddf2debd
 
 3D空間でのレイトレーシングはDirectX9だけでは難しいだろう。  
 OpenCLを併用すればできるかもしれない、という構想はあるが、その前に、  

@@ -1,5 +1,5 @@
 bool g_bEnableSSAO = true;
-float g_occlusionDarkenStrength = 1.035f;
+float g_occlusionDarkenStrength = 1.835f;
 float g_occlusionDepthBias = 0.000015f;
 float g_occlusionDepthFalloff = 250.0f;
 
@@ -67,7 +67,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
 
     float occlusion = 0.0;
 
-    for (int i = 0; i < 64; ++i)
+    for (int i = 0; i < 128; ++i)
     {
         float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
                                    float2(12.9898, 78.233))) * 43758.5453);

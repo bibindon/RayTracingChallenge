@@ -2,9 +2,10 @@ float4x4 g_matWorldViewProj;
 float4x4 g_matView;
 float4 g_lightNormal = { 0.3f, 1.0f, 0.5f, 0.0f };
 float4 g_baseColor = { 0.5f, 0.5f, 0.5f, 1.0f };
-float3 g_ambient = { 0.5f, 0.5f, 0.5f };
+float3 g_ambient = { 0.8f, 0.8f, 0.8f };
 
 bool g_bUseTexture = true;
+bool g_bUnlit = false;
 
 texture texture1;
 sampler textureSampler = sampler_state
@@ -49,15 +50,21 @@ void PixelShaderMRT(
         baseColor = tex2D(textureSampler, inTexCoord0);
     }
 
-    float3 N = normalize(inNormal);
-    float3 L = normalize(g_lightNormal.xyz);
-    float NdotL = saturate(dot(N, L));
-    float3 lighting = g_ambient + (1.0 - g_ambient) * NdotL;
-    outColor0 = float4(baseColor.rgb * lighting, baseColor.a);
+    float3 litColor = baseColor.rgb;
+    if (!g_bUnlit)
+    {
+        float3 N = normalize(inNormal);
+        float3 L = normalize(g_lightNormal.xyz);
+        float NdotL = saturate(dot(N, L));
+        float3 lighting = g_ambient + (1.0 - g_ambient) * NdotL;
+        litColor *= lighting;
+    }
+    outColor0 = float4(litColor, baseColor.a);
 
     float d = saturate(inClipZW.x / inClipZW.y);
     outColor1 = float4(d, d, d, 1.0);
 
+    float3 N = normalize(inNormal);
     outColor2 = float4(N * 0.5 + 0.5, 1.0);
 }
 

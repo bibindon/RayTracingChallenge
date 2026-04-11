@@ -1,5 +1,5 @@
 bool g_bEnableRayTracing = true;
-float g_indirectLightIntensity = 0.3f;
+float g_indirectLightIntensity = 0.5f;
 
 texture texture1;
 sampler textureSampler = sampler_state {

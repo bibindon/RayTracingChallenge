@@ -30,6 +30,7 @@ struct MeshData
     std::vector<LPDIRECT3DTEXTURE9> textures;
     DWORD numMaterials = 0;
     D3DXVECTOR3 position;
+    bool unlit = false;
 };
 
 std::vector<MeshData> g_meshes;
@@ -228,22 +229,23 @@ void InitD3D(HWND hWnd)
     {
         const TCHAR* filename;
         D3DXVECTOR3 position;
+        bool unlit;
     };
     MeshLoadInfo loadInfos[] =
     {
-        { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f) },
-        { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f) },
-        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f) },
-        { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f) },
-        { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f) },
-        { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f) },
-        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f) },
-        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f) },
-        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f) },
-        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f) },
-        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f) },
-        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f) },
-        { _T("cube_white_big.x"), D3DXVECTOR3(-10.0f,  -7.5f,  14.0f) },
+        { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f), false },
+        { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f), false },
+        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f), false },
+        { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false },
+        { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false },
+        { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f), false },
+        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true },
+        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true },
+        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true },
+        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f), false },
+        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f), false },
+        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f), false },
+        { _T("cube_white_big.x"), D3DXVECTOR3(-10.0f,  -7.5f,  14.0f), false },
     };
 
     const int meshCount = _countof(loadInfos);
@@ -263,6 +265,14 @@ void InitD3D(HWND hWnd)
         assert(hResult == S_OK);
 
         g_meshes[mi].position = loadInfos[mi].position;
+        if (true)
+        {
+            g_meshes[mi].unlit = loadInfos[mi].unlit;
+        }
+        else
+        {
+            g_meshes[mi].unlit = true;
+        }
 
         D3DXMATERIAL* d3dxMaterials = (D3DXMATERIAL*)pD3DXMtrlBuffer->GetBufferPointer();
         g_meshes[mi].materials.resize(g_meshes[mi].numMaterials);
@@ -516,6 +526,8 @@ void RenderPass1()
         D3DXMATRIX matWVP = matWorld * View * Proj;
         hResult = g_pEffect1->SetMatrix("g_matWorldViewProj", &matWVP);
         assert(hResult == S_OK);
+        hResult = g_pEffect1->SetBool("g_bUnlit", g_meshes[mi].unlit ? TRUE : FALSE);
+        assert(hResult == S_OK);
 
         for (DWORD i = 0; i < g_meshes[mi].numMaterials; i++)
         {
@@ -536,6 +548,8 @@ void RenderPass1()
 
         D3DXVECTOR4 sphereBaseColor(0.53f, 0.81f, 0.92f, 1.0f);
         hResult = g_pEffect1->SetVector("g_baseColor", &sphereBaseColor);
+        assert(hResult == S_OK);
+        hResult = g_pEffect1->SetBool("g_bUnlit", TRUE);
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUseTexture", FALSE); assert(hResult == S_OK);
         hResult = g_pEffect1->SetTexture("texture1", NULL);    assert(hResult == S_OK);

@@ -236,6 +236,8 @@ void InitD3D(HWND hWnd)
     {
         { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f), false },
         { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f), false },
+        { _T("cube_black.x"),     D3DXVECTOR3(-4.5f,   0.0f, -5.0f), false },
+        { _T("cube_black.x"),     D3DXVECTOR3(4.5f,   5.0f, 5.0f), false },
         { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f), false },
         { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false },
         { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false },

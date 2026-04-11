@@ -38,6 +38,7 @@ LPD3DXMESH g_pMeshSphere = NULL;
 
 LPD3DXEFFECT g_pEffect1 = NULL;
 LPD3DXEFFECT g_pEffect2 = NULL;
+LPD3DXEFFECT g_pEffect3 = NULL;
 
 bool g_bClose = false;
 
@@ -45,6 +46,7 @@ bool g_bClose = false;
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget2 = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget3 = NULL;
+LPDIRECT3DTEXTURE9 g_pRenderTarget4 = NULL;
 
 // フルスクリーンクアッド用
 LPDIRECT3DVERTEXDECLARATION9 g_pQuadDecl = NULL;
@@ -64,6 +66,7 @@ static void Cleanup();
 
 static void RenderPass1();
 static void RenderPass2();
+static void RenderPass3();
 static void DrawFullscreenQuad();
 
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -135,6 +138,7 @@ int WINAPI _tWinMain(_In_ HINSTANCE hInstance,
 
             RenderPass1();
             RenderPass2();
+            RenderPass3();
         }
 
         if (g_bClose)
@@ -312,6 +316,16 @@ void InitD3D(HWND hWnd)
                                        NULL);
     assert(hResult == S_OK);
 
+    hResult = D3DXCreateEffectFromFile(g_pd3dDevice,
+                                       _T("simple3.fx"),
+                                       NULL,
+                                       NULL,
+                                       D3DXSHADER_DEBUG,
+                                       NULL,
+                                       &g_pEffect3,
+                                       NULL);
+    assert(hResult == S_OK);
+
     hResult = D3DXCreateSphere(g_pd3dDevice,
                                500.f,
                                32,
@@ -348,6 +362,15 @@ void InitD3D(HWND hWnd)
                                  &g_pRenderTarget3);
     assert(hResult == S_OK);
 
+    hResult = D3DXCreateTexture(g_pd3dDevice,
+                                 1600, 900,
+                                 1,
+                                 D3DUSAGE_RENDERTARGET,
+                                 D3DFMT_A8R8G8B8,
+                                 D3DPOOL_DEFAULT,
+                                 &g_pRenderTarget4);
+    assert(hResult == S_OK);
+
     // フルスクリーンクアッドの頂宣言
     D3DVERTEXELEMENT9 elems[] =
     {
@@ -377,12 +400,14 @@ void Cleanup()
     SAFE_RELEASE(g_pMeshSphere);
     SAFE_RELEASE(g_pEffect1);
     SAFE_RELEASE(g_pEffect2);
+    SAFE_RELEASE(g_pEffect3);
     SAFE_RELEASE(g_pFont);
 
     // 追加: 解放漏れ防止
     SAFE_RELEASE(g_pRenderTarget);
     SAFE_RELEASE(g_pRenderTarget2);
     SAFE_RELEASE(g_pRenderTarget3);
+    SAFE_RELEASE(g_pRenderTarget4);
     SAFE_RELEASE(g_pQuadDecl);
     SAFE_RELEASE(g_pSprite);
 
@@ -514,6 +539,16 @@ void RenderPass2()
 {
     HRESULT hResult = E_FAIL;
 
+    LPDIRECT3DSURFACE9 pOldRT0 = NULL;
+    hResult = g_pd3dDevice->GetRenderTarget(0, &pOldRT0);
+    assert(hResult == S_OK);
+
+    LPDIRECT3DSURFACE9 pRT0 = NULL;
+    hResult = g_pRenderTarget4->GetSurfaceLevel(0, &pRT0);
+    assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(0, pRT0);
+    assert(hResult == S_OK);
+
     hResult = g_pd3dDevice->Clear(0, NULL,
                                   D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
                                   D3DCOLOR_XRGB(0, 0, 0),
@@ -565,7 +600,58 @@ void RenderPass2()
     }
 
     hResult = g_pd3dDevice->EndScene();  assert(hResult == S_OK);
-    hResult = g_pd3dDevice->Present(NULL, NULL, NULL, NULL); assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderTarget(0, pOldRT0);
+    assert(hResult == S_OK);
+
+    SAFE_RELEASE(pRT0);
+    SAFE_RELEASE(pOldRT0);
+}
+
+void RenderPass3()
+{
+    HRESULT hResult = E_FAIL;
+
+    hResult = g_pd3dDevice->Clear(0, NULL,
+                                  D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+                                  D3DCOLOR_XRGB(0, 0, 0),
+                                  1.0f, 0);
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->BeginScene();
+    assert(hResult == S_OK);
+
+    hResult = g_pEffect3->SetTechnique("Technique1");
+    assert(hResult == S_OK);
+
+    UINT numPass = 0;
+    hResult = g_pEffect3->Begin(&numPass, 0);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->BeginPass(0);
+    assert(hResult == S_OK);
+
+    hResult = g_pEffect3->SetTexture("texture1", g_pRenderTarget4);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->CommitChanges();
+    assert(hResult == S_OK);
+
+    DrawFullscreenQuad();
+
+    hResult = g_pEffect3->EndPass();
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->End();
+    assert(hResult == S_OK);
+
+    hResult = g_pd3dDevice->EndScene();
+    assert(hResult == S_OK);
+    hResult = g_pd3dDevice->Present(NULL, NULL, NULL, NULL);
+    assert(hResult == S_OK);
 
     hResult = g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
     assert(hResult == S_OK);

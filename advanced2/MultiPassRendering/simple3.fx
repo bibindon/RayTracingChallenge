@@ -1,6 +1,7 @@
 bool g_bEnableSSAO = true;
 float g_occlusionDarkenStrength = 1.35f;
 float g_occlusionDepthBias = 0.000015f;
+float g_occlusionDepthFalloff = 250.0f;
 
 texture texture1;
 sampler textureSampler = sampler_state
@@ -64,7 +65,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
 
     float occlusion = 0.0;
 
-    for (int i = 0; i < 32; ++i)
+    for (int i = 0; i < 64; ++i)
     {
         float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
                                    float2(12.9898, 78.233))) * 43758.5453);
@@ -90,7 +91,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
         {
             float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
             float depthDiff = abs(depth - sampleDepth);
-            float sampleWeight = 1.0 / (1.0 + depthDiff);
+            float sampleWeight = 1.0 / (1.0 + depthDiff * g_occlusionDepthFalloff);
 
             if (sampleDepth + g_occlusionDepthBias < depth)
             {
@@ -99,7 +100,7 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
         }
     }
 
-    float ao = 1.0 - saturate((occlusion / 32.0) * (1.0 / max(g_occlusionDarkenStrength, 0.0001)));
+    float ao = 1.0 - saturate((occlusion / 64.0) * (1.0 / max(g_occlusionDarkenStrength, 0.0001)));
     outColor = float4(workColor.rgb * ao, workColor.a);
 }
 

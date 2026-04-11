@@ -62,7 +62,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float4 accumulatedColor = workColor;
     float accumulatedWeight = 1.0;
 
-    for (int i = 0; i < 32; ++i)
+    for (int i = 0; i < 64; ++i)
     {
         float noise = frac(sin(dot(inTexCood + float2(i * 0.123, i * 0.371),
                                    float2(12.9898, 78.233))) * 43758.5453);

@@ -805,6 +805,12 @@ void RenderPass3()
     assert(hResult == S_OK);
     hResult = g_pEffect3->SetTexture("texture3", g_pRenderTarget3);
     assert(hResult == S_OK);
+    hResult = g_pEffect3->SetTexture("texture4", g_pRenderTarget5);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetMatrix("g_matProj", &g_matCurrentProj);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetMatrix("g_matProjInv", &g_matCurrentProjInv);
+    assert(hResult == S_OK);
     hResult = g_pEffect3->SetBool("g_bEnableSSAO", g_bSSAOEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
     hResult = g_pEffect3->CommitChanges();

@@ -11,9 +11,9 @@ texture texture1;
 sampler textureSampler = sampler_state
 {
     Texture = (texture1);
-    MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
+    MipFilter = NONE;
+    MinFilter = POINT;
+    MagFilter = POINT;
 };
 
 void VertexShader1(

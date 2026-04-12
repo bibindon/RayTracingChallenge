@@ -64,9 +64,25 @@ struct QuadVertex
     float u, v;       // テクスチャ座標
 };
 
+static const D3DVERTEXELEMENT9 g_tangentVertexDecl[] =
+{
+    { 0,  0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+    { 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+    { 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+    { 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+    { 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
+    D3DDECL_END()
+};
+
+static const float g_fAdjacencyEpsilon = 0.0001f;
+static const float g_fPartialEdgeThreshold = 0.01f;
+static const float g_fSingularPointThreshold = 0.01f;
+static const float g_fNormalEdgeThreshold = 0.999f;
+
 static void TextDraw(LPD3DXFONT pFont, TCHAR* text, int X, int Y);
 static void InitD3D(HWND hWnd);
 static void Cleanup();
+static HRESULT BuildTangentSpaceMesh(LPD3DXMESH* ppMesh);
 
 static void RenderPass1();
 static void RenderPass2();
@@ -171,6 +187,57 @@ void TextDraw(LPD3DXFONT pFont, TCHAR* text, int X, int Y)
     assert((int)hResult >= 0);
 }
 
+HRESULT BuildTangentSpaceMesh(LPD3DXMESH* ppMesh)
+{
+    if (ppMesh == NULL || *ppMesh == NULL)
+    {
+        return E_INVALIDARG;
+    }
+
+    HRESULT hResult = E_FAIL;
+
+    LPD3DXMESH pMeshWithBasis = NULL;
+    hResult = (*ppMesh)->CloneMesh((*ppMesh)->GetOptions(),
+                                   g_tangentVertexDecl,
+                                   g_pd3dDevice,
+                                   &pMeshWithBasis);
+    if (FAILED(hResult))
+    {
+        return hResult;
+    }
+
+    std::vector<DWORD> adjacency((*ppMesh)->GetNumFaces() * 3);
+    hResult = pMeshWithBasis->GenerateAdjacency(g_fAdjacencyEpsilon, adjacency.data());
+    if (FAILED(hResult))
+    {
+        SAFE_RELEASE(pMeshWithBasis);
+        return hResult;
+    }
+
+    LPD3DXMESH pTangentFrameMesh = NULL;
+    hResult = D3DXComputeTangentFrameEx(pMeshWithBasis,
+                                        D3DDECLUSAGE_TEXCOORD, 0,
+                                        D3DDECLUSAGE_TANGENT, 0,
+                                        D3DDECLUSAGE_BINORMAL, 0,
+                                        D3DDECLUSAGE_NORMAL, 0,
+                                        0,
+                                        adjacency.data(),
+                                        g_fPartialEdgeThreshold,
+                                        g_fSingularPointThreshold,
+                                        g_fNormalEdgeThreshold,
+                                        &pTangentFrameMesh,
+                                        NULL);
+    SAFE_RELEASE(pMeshWithBasis);
+    if (FAILED(hResult))
+    {
+        return hResult;
+    }
+
+    SAFE_RELEASE(*ppMesh);
+    *ppMesh = pTangentFrameMesh;
+    return S_OK;
+}
+
 void InitD3D(HWND hWnd)
 {
     HRESULT hResult = E_FAIL;
@@ -265,6 +332,9 @@ void InitD3D(HWND hWnd)
                                     NULL,
                                     &g_meshes[mi].numMaterials,
                                     &g_meshes[mi].pMesh);
+        assert(hResult == S_OK);
+
+        hResult = BuildTangentSpaceMesh(&g_meshes[mi].pMesh);
         assert(hResult == S_OK);
 
         g_meshes[mi].position = loadInfos[mi].position;

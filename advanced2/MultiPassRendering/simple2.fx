@@ -44,6 +44,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
     float4 workColor = tex2D(textureSampler, inTexCood);
     float depth = tex2D(depthSampler, inTexCood).r;
     float3 normal = tex2D(normalSampler, inTexCood).rgb * 2.0 - 1.0;
+    normal = normalize(normal);
 
     if (!g_bEnableRayTracing || depth >= 0.99)
     {
@@ -89,12 +90,21 @@ void PixelShader1(in float4 inPosition    : POSITION,
             sampleUV.y >= 0.0 && sampleUV.y <= 1.0)
         {
             float sampleDepth = tex2Dlod(depthSampler, float4(sampleUV, 0, 0)).r;
+            float3 sampleNormal = tex2Dlod(normalSampler, float4(sampleUV, 0, 0)).rgb * 2.0 - 1.0;
+            float sampleNormalLenSq = dot(sampleNormal, sampleNormal);
+            if (sampleNormalLenSq <= 0.0001)
+            {
+                continue;
+            }
+
+            sampleNormal = sampleNormal / sqrt(sampleNormalLenSq);
             float depthDiff = abs(depth - sampleDepth);
+            float normalWeight = saturate((1.0 - dot(normal, sampleNormal)) * 0.5);
             float distanceBoost = 1.0 + (1.0 - rayLength / 800.0);
             float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
             float luminanceWeight = 0.25 + dot(hitColor.rgb, float3(0.299, 0.587, 0.114));
             luminanceWeight = 1.f;
-            float sampleWeight = (distanceBoost * luminanceWeight) / (1.0 + depthDiff);
+            float sampleWeight = ((distanceBoost * luminanceWeight) / (1.0 + depthDiff)) * normalWeight;
             accumulatedColor += hitColor * sampleWeight;
             accumulatedWeight += sampleWeight;
         }

@@ -1,6 +1,8 @@
 bool g_bEnableRayTracing = true;
 float g_indirectLightIntensity = 0.43f;
-float g_sampleRadius = 60.0f;
+float g_sampleRadius = 30.0f;
+float g_depthCompareBias = 0.02f;
+float g_depthCompareFalloff = 6.0f;
 float4x4 g_matProj;
 float4x4 g_matProjInv;
 
@@ -155,13 +157,15 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
             float3 deltaToHit = sampleViewPos - baseViewPos;
             float positionError = length(sampleViewPos - targetViewPos);
+            float depthToTarget = targetViewPos.z - sampleViewPos.z;
             float distanceWeight = saturate(1.0 - sampleDistance / g_sampleRadius);
             float targetMatchWeight = 1.0 / (1.0 + positionError * 4.0);
+            float depthWeight = saturate((depthToTarget + g_depthCompareBias) * g_depthCompareFalloff);
             float normalWeight = saturate((1.0 - dot(normal, sampleNormal)) * 0.5);
             float hemisphereWeight = saturate(dot(sampleDir, SafeNormalize(deltaToHit, sampleDir)));
 
             float4 hitColor = tex2Dlod(textureSampler, float4(sampleUV, 0, 0));
-            float sampleWeight = distanceWeight * targetMatchWeight * normalWeight * hemisphereWeight;
+            float sampleWeight = distanceWeight * targetMatchWeight * depthWeight * normalWeight * hemisphereWeight;
 
             accumulatedColor += hitColor * sampleWeight;
             accumulatedWeight += sampleWeight;

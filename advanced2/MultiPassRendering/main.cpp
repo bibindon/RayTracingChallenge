@@ -51,6 +51,7 @@ LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget2 = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget3 = NULL;
 LPDIRECT3DTEXTURE9 g_pRenderTarget4 = NULL;
+LPDIRECT3DTEXTURE9 g_pRenderTarget5 = NULL;
 
 // フルスクリーンクアッド用
 LPDIRECT3DVERTEXDECLARATION9 g_pQuadDecl = NULL;
@@ -78,6 +79,9 @@ static const float g_fAdjacencyEpsilon = 0.0001f;
 static const float g_fPartialEdgeThreshold = 0.01f;
 static const float g_fSingularPointThreshold = 0.01f;
 static const float g_fNormalEdgeThreshold = 0.999f;
+
+D3DXMATRIX g_matCurrentProj;
+D3DXMATRIX g_matCurrentProjInv;
 
 static void TextDraw(LPD3DXFONT pFont, TCHAR* text, int X, int Y);
 static void InitD3D(HWND hWnd);
@@ -423,6 +427,8 @@ void InitD3D(HWND hWnd)
                                &g_pMeshSphere,
                                NULL);
     assert(hResult == S_OK);
+    hResult = BuildTangentSpaceMesh(&g_pMeshSphere);
+    assert(hResult == S_OK);
 
     // RT0: color, RT1: high-precision depth, RT2: normal, RT3: post-process
     hResult = D3DXCreateTexture(g_pd3dDevice,
@@ -459,6 +465,15 @@ void InitD3D(HWND hWnd)
                                  D3DFMT_A8R8G8B8,
                                  D3DPOOL_DEFAULT,
                                  &g_pRenderTarget4);
+    assert(hResult == S_OK);
+
+    hResult = D3DXCreateTexture(g_pd3dDevice,
+                                 1600, 900,
+                                 1,
+                                 D3DUSAGE_RENDERTARGET,
+                                 D3DFMT_A8R8G8B8,
+                                 D3DPOOL_DEFAULT,
+                                 &g_pRenderTarget5);
     assert(hResult == S_OK);
 
     // フルスクリーンクアッドの頂宣言
@@ -498,6 +513,7 @@ void Cleanup()
     SAFE_RELEASE(g_pRenderTarget2);
     SAFE_RELEASE(g_pRenderTarget3);
     SAFE_RELEASE(g_pRenderTarget4);
+    SAFE_RELEASE(g_pRenderTarget5);
     SAFE_RELEASE(g_pQuadDecl);
     SAFE_RELEASE(g_pSprite);
 
@@ -514,17 +530,20 @@ void RenderPass1()
     hResult = g_pd3dDevice->GetRenderTarget(0, &pOldRT0);
     assert(hResult == S_OK);
 
-    // 3 枚の RT サーフェスを取得
+    // 4 枚の RT サーフェスを取得
     LPDIRECT3DSURFACE9 pRT0 = NULL;
     LPDIRECT3DSURFACE9 pRT1 = NULL;
     LPDIRECT3DSURFACE9 pRT2 = NULL;
+    LPDIRECT3DSURFACE9 pRT3 = NULL;
     hResult = g_pRenderTarget->GetSurfaceLevel(0, &pRT0);  assert(hResult == S_OK);
     hResult = g_pRenderTarget2->GetSurfaceLevel(0, &pRT1); assert(hResult == S_OK);
     hResult = g_pRenderTarget3->GetSurfaceLevel(0, &pRT2); assert(hResult == S_OK);
+    hResult = g_pRenderTarget5->GetSurfaceLevel(0, &pRT3); assert(hResult == S_OK);
 
     hResult = g_pd3dDevice->SetRenderTarget(0, pRT0); assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(1, NULL); assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(2, NULL); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(3, NULL); assert(hResult == S_OK);
 
     static float f = 0.0f;
     f += g_fCameraMoveSpeed;
@@ -536,6 +555,8 @@ void RenderPass1()
                                1600.0f / 900.0f,
                                1.0f,
                                100.0f);
+    g_matCurrentProj = Proj;
+    D3DXMatrixInverse(&g_matCurrentProjInv, NULL, &g_matCurrentProj);
 
     D3DXVECTOR3 eye(g_fCameraDistance * sinf(f), 3, -g_fCameraDistance * cosf(f));
     D3DXVECTOR3 at(0, 1, 0);
@@ -577,9 +598,17 @@ void RenderPass1()
                                   1.0f, 0);
     assert(hResult == S_OK);
 
+    hResult = g_pd3dDevice->SetRenderTarget(0, pRT3); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->Clear(0, NULL,
+                                  D3DCLEAR_TARGET,
+                                  D3DCOLOR_ARGB(255, 128, 128, 255),
+                                  1.0f, 0);
+    assert(hResult == S_OK);
+
     hResult = g_pd3dDevice->SetRenderTarget(0, pRT0); assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(1, pRT1); assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(2, pRT2); assert(hResult == S_OK);
+    hResult = g_pd3dDevice->SetRenderTarget(3, pRT3); assert(hResult == S_OK);
 
     hResult = g_pd3dDevice->BeginScene(); assert(hResult == S_OK);
 
@@ -652,6 +681,7 @@ void RenderPass1()
     hResult = g_pd3dDevice->EndScene(); assert(hResult == S_OK);
 
     // MRT を解除してバックバッファへ戻す
+    hResult = g_pd3dDevice->SetRenderTarget(3, NULL);    assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(2, NULL);    assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(1, NULL);    assert(hResult == S_OK);
     hResult = g_pd3dDevice->SetRenderTarget(0, pOldRT0); assert(hResult == S_OK);
@@ -659,6 +689,7 @@ void RenderPass1()
     SAFE_RELEASE(pRT0);
     SAFE_RELEASE(pRT1);
     SAFE_RELEASE(pRT2);
+    SAFE_RELEASE(pRT3);
     SAFE_RELEASE(pOldRT0);
 }
 
@@ -698,6 +729,9 @@ void RenderPass2()
     hResult = g_pEffect2->SetTexture("texture1", g_pRenderTarget);  assert(hResult == S_OK);
     hResult = g_pEffect2->SetTexture("texture2", g_pRenderTarget2); assert(hResult == S_OK);
     hResult = g_pEffect2->SetTexture("texture3", g_pRenderTarget3); assert(hResult == S_OK);
+    hResult = g_pEffect2->SetTexture("texture4", g_pRenderTarget5); assert(hResult == S_OK);
+    hResult = g_pEffect2->SetMatrix("g_matProj", &g_matCurrentProj); assert(hResult == S_OK);
+    hResult = g_pEffect2->SetMatrix("g_matProjInv", &g_matCurrentProjInv); assert(hResult == S_OK);
     hResult = g_pEffect2->SetBool("g_bEnableRayTracing", g_bRayTracingEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
     hResult = g_pEffect2->CommitChanges();                           assert(hResult == S_OK);

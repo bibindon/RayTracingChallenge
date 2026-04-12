@@ -19,11 +19,13 @@ sampler textureSampler = sampler_state
 void VertexShader1(
     in float4 inPosition : POSITION,
     in float3 inNormal : NORMAL,
+    in float3 inTangent : TANGENT,
     in float2 inTexCoord0 : TEXCOORD0,
     out float4 outPosition : POSITION0,
     out float2 outTexCoord0 : TEXCOORD0,
     out float2 outClipZW : TEXCOORD1,
-    out float3 outNormal : TEXCOORD2)
+    out float3 outNormal : TEXCOORD2,
+    out float3 outTangent : TEXCOORD3)
 {
     float4 clipPosition = mul(inPosition, g_matWorldViewProj);
     outPosition = clipPosition;
@@ -33,15 +35,18 @@ void VertexShader1(
     outClipZW = clipPosition.zw;
 
     outNormal = mul(inNormal, (float3x3)g_matView);
+    outTangent = mul(inTangent, (float3x3)g_matView);
 }
 
 void PixelShaderMRT(
     in float2 inTexCoord0 : TEXCOORD0,
     in float2 inClipZW : TEXCOORD1,
     in float3 inNormal : TEXCOORD2,
+    in float3 inTangent : TEXCOORD3,
     out float4 outColor0 : COLOR0,
     out float4 outColor1 : COLOR1,
-    out float4 outColor2 : COLOR2)
+    out float4 outColor2 : COLOR2,
+    out float4 outColor3 : COLOR3)
 {
     float4 baseColor = g_baseColor;
 
@@ -66,6 +71,9 @@ void PixelShaderMRT(
 
     float3 N = normalize(inNormal);
     outColor2 = float4(N * 0.5 + 0.5, 1.0);
+
+    float3 T = normalize(inTangent - N * dot(inTangent, N));
+    outColor3 = float4(T * 0.5 + 0.5, 1.0);
 }
 
 technique TechniqueMRT

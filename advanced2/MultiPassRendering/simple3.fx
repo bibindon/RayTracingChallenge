@@ -1,3 +1,5 @@
+//
+// SSAOを描画していたがうまくいかなかったので消した。
 texture texture1;
 sampler textureSampler = sampler_state
 {

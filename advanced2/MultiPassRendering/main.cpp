@@ -45,9 +45,10 @@ LPD3DXEFFECT g_pEffect3 = NULL;
 bool g_bClose = false;
 bool g_bRayTracingEnabled = true;
 bool g_bSSAOEnabled = true;
-bool g_bHDRToneMappingEnabled = true;
+bool g_bHDREnabled = true;
+bool g_bToneMappingEnabled = false;
 bool g_bGaussianFilterEnabled = true;
-int g_nBackgroundMode = 0;
+int g_nBackgroundMode = 1;
 
 // === 変更: RT を 3 枚用意 ===
 LPDIRECT3DTEXTURE9 g_pRenderTarget = NULL;
@@ -317,9 +318,9 @@ void InitD3D(HWND hWnd)
         { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false, 1.0f },
         { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false, 1.0f },
         { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f), false, 1.0f },
-        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true, 1.0f },
-        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true, 1.0f },
-        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true, 1.0f },
+        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true, 3.0f },
+        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true, 2.0f },
+        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true, 5.0f },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f), false, 1.0f },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f), false, 1.0f },
         { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  -5.0f), false, 1.0f },
@@ -655,7 +656,7 @@ void RenderPass1()
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUnlit", g_meshes[mi].unlit ? TRUE : FALSE);
         assert(hResult == S_OK);
-        float meshHDRIntensity = g_bHDRToneMappingEnabled ? g_meshes[mi].hdrIntensity : 1.0f;
+        float meshHDRIntensity = g_bHDREnabled ? g_meshes[mi].hdrIntensity : 1.0f;
         hResult = g_pEffect1->SetFloat("g_hdrIntensity", meshHDRIntensity);
         assert(hResult == S_OK);
 
@@ -821,7 +822,7 @@ void RenderPass3()
     assert(hResult == S_OK);
     hResult = g_pEffect3->SetTexture("texture3", g_pRenderTarget3);
     assert(hResult == S_OK);
-    hResult = g_pEffect3->SetBool("g_bEnableToneMapping", g_bHDRToneMappingEnabled ? TRUE : FALSE);
+    hResult = g_pEffect3->SetBool("g_bEnableToneMapping", g_bToneMappingEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
     hResult = g_pEffect3->SetBool("g_bEnableGaussianFilter", g_bGaussianFilterEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
@@ -886,12 +887,17 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         if (wParam == '4')
         {
-            g_bHDRToneMappingEnabled = !g_bHDRToneMappingEnabled;
+            g_bGaussianFilterEnabled = !g_bGaussianFilterEnabled;
             return 0;
         }
         if (wParam == '5')
         {
-            g_bGaussianFilterEnabled = !g_bGaussianFilterEnabled;
+            g_bHDREnabled = !g_bHDREnabled;
+            return 0;
+        }
+        if (wParam == '6')
+        {
+            g_bToneMappingEnabled = !g_bToneMappingEnabled;
             return 0;
         }
         break;

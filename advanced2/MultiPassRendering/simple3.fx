@@ -28,7 +28,7 @@ sampler normalSampler = sampler_state
 };
 
 float g_exposure = 1.0f;
-bool g_bEnableToneMapping = true;
+bool g_bEnableToneMapping = false;
 bool g_bEnableGaussianFilter = true;
 float g_gaussianBlendFactor = 0.85f;
 float g_gaussianDepthThreshold = 0.0035f;

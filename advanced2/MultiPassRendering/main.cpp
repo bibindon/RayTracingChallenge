@@ -317,12 +317,12 @@ void InitD3D(HWND hWnd)
         { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false, 1.0f },
         { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false, 1.0f },
         { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f), false, 1.0f },
-        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true, 3.0f },
-        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true, 10.0f },
-        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true, 2.0f },
+        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true, 1.0f },
+        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true, 1.0f },
+        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true, 1.0f },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f), false, 1.0f },
         { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f), false, 1.0f },
-        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f), false, 1.0f },
+        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  -5.0f), false, 1.0f },
         { _T("cube_white_big.x"), D3DXVECTOR3(-10.0f,  -7.5f,  14.0f), false, 1.0f },
     };
 

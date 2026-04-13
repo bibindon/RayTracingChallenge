@@ -182,10 +182,12 @@ void PixelShader1(in float4 inPosition    : POSITION,
                                         float2(39.3468, 11.1351))) * 24634.6345);
 
         // 接線空間上の半球サンプル方向を作る。
-        float radiusNoise = sqrt(noise);
         float phi = angleNoise * 6.2831853;
-        float localZ = sqrt(saturate(1.0 - noise));
-        float2 localXY = float2(cos(phi), sin(phi)) * radiusNoise;
+        float cosineWeightedZ = sqrt(saturate(1.0 - noise));
+        float uniformZ = noise;
+        float localZ = lerp(uniformZ, cosineWeightedZ, 0.6);
+        float radialScale = sqrt(saturate(1.0 - localZ * localZ));
+        float2 localXY = float2(cos(phi), sin(phi)) * radialScale;
         float3 localSampleDir = float3(localXY, localZ);
 
         // 接線空間からビュー空間へ回転する。

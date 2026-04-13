@@ -1,7 +1,7 @@
 float4x4 g_matWorldViewProj;
 float4x4 g_matWorld;
 float4x4 g_matView;
-float4 g_lightPosition = { -8.0f, 6.0f, -4.0f, 1.0f };
+float4 g_lightPosition = { -8.0f, 8.0f, -8.0f, 1.0f };
 float4 g_baseColor = { 0.5f, 0.5f, 0.5f, 1.0f };
 float3 g_ambient = { 0.4f, 0.4f, 0.4f };
 float g_hdrIntensity = 1.0f;

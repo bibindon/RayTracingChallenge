@@ -1,10 +1,10 @@
 bool g_bEnableRayTracing = true;
 
 // 間接光として元の色にどれだけ混ぜるか。
-float g_indirectLightIntensity = 0.40f;
+float g_indirectLightIntensity = 0.25f;
 
 // スクリーンスペース上で探索する最大距離。
-float g_sampleRadius = 45.0f;
+float g_sampleRadius = 32.0f;
 
 // 遠いサンプルほど寄与を減らすための係数。
 float g_distanceFalloffStrength = 0.25f;

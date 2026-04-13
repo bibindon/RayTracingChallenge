@@ -126,6 +126,7 @@ void BuildBasis(float3 normal, float3 tangentInput, out float3 tangent, out floa
     tangent = SafeNormalize(cross(binormal, normal), tangent);
 }
 
+
 void VertexShader1(in  float4 inPosition  : POSITION,
                    in  float2 inTexCood   : TEXCOORD0,
                    out float4 outPosition : POSITION,

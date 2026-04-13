@@ -46,6 +46,7 @@ bool g_bClose = false;
 bool g_bRayTracingEnabled = true;
 bool g_bSSAOEnabled = true;
 bool g_bHDRToneMappingEnabled = true;
+bool g_bGaussianFilterEnabled = true;
 int g_nBackgroundMode = 0;
 
 // === 変更: RT を 3 枚用意 ===
@@ -812,7 +813,13 @@ void RenderPass3()
 
     hResult = g_pEffect3->SetTexture("texture1", g_pRenderTarget4);
     assert(hResult == S_OK);
+    hResult = g_pEffect3->SetTexture("texture2", g_pRenderTarget2);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetTexture("texture3", g_pRenderTarget3);
+    assert(hResult == S_OK);
     hResult = g_pEffect3->SetBool("g_bEnableToneMapping", g_bHDRToneMappingEnabled ? TRUE : FALSE);
+    assert(hResult == S_OK);
+    hResult = g_pEffect3->SetBool("g_bEnableGaussianFilter", g_bGaussianFilterEnabled ? TRUE : FALSE);
     assert(hResult == S_OK);
     hResult = g_pEffect3->CommitChanges();
     assert(hResult == S_OK);
@@ -876,6 +883,11 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (wParam == '4')
         {
             g_bHDRToneMappingEnabled = !g_bHDRToneMappingEnabled;
+            return 0;
+        }
+        if (wParam == '5')
+        {
+            g_bGaussianFilterEnabled = !g_bGaussianFilterEnabled;
             return 0;
         }
         break;

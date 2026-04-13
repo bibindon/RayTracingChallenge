@@ -31,6 +31,7 @@ struct MeshData
     DWORD numMaterials = 0;
     D3DXVECTOR3 position;
     bool unlit = false;
+    float hdrIntensity = 1.0f;
 };
 
 std::vector<MeshData> g_meshes;
@@ -302,24 +303,25 @@ void InitD3D(HWND hWnd)
         const TCHAR* filename;
         D3DXVECTOR3 position;
         bool unlit;
+        float hdrIntensity;
     };
     MeshLoadInfo loadInfos[] =
     {
-        { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f), false },
-        { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f), false },
-        { _T("cube_black.x"),     D3DXVECTOR3(-4.5f,   0.0f, -5.0f), false },
-        { _T("cube_black.x"),     D3DXVECTOR3(4.5f,   5.0f, 5.0f), false },
-        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f), false },
-        { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false },
-        { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false },
-        { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f), false },
-        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true },
-        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true },
-        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true },
-        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f), false },
-        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f), false },
-        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f), false },
-        { _T("cube_white_big.x"), D3DXVECTOR3(-10.0f,  -7.5f,  14.0f), false },
+        { _T("cube_red.x"),       D3DXVECTOR3(-2.0f,   0.0f, -2.0f), false, 1.0f },
+        { _T("cube_white.x"),     D3DXVECTOR3(-2.0f,   0.0f,  2.0f), false, 1.0f },
+        { _T("cube_black.x"),     D3DXVECTOR3(-4.5f,   0.0f, -5.0f), false, 1.0f },
+        { _T("cube_black.x"),     D3DXVECTOR3(4.5f,   5.0f, 5.0f), false, 1.0f },
+        { _T("cube_green.x"),     D3DXVECTOR3( 2.0f,   0.5f,  2.0f), false, 1.0f },
+        { _T("cube_blue.x"),      D3DXVECTOR3( -6.0f,   0.0f,  2.0f), false, 1.0f },
+        { _T("cube_green.x"),     D3DXVECTOR3( 4.0f,   5.0f, -2.0f), false, 1.0f },
+        { _T("cube_blue.x"),      D3DXVECTOR3(-4.0f,   3.75f, -4.0f), false, 1.0f },
+        { _T("sphere_orange.x"),  D3DXVECTOR3(-5.5f,   3.2f, -0.5f), true, 3.0f },
+        { _T("sphere_pink.x"),    D3DXVECTOR3(-3.0f,   3.5f,  6.5f), true, 10.0f },
+        { _T("sphere_yellowgreen.x"), D3DXVECTOR3( 8.0f,  3.0f, -0.5f), true, 2.0f },
+        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f, -11.0f,  0.0f), false, 1.0f },
+        { _T("cube_white_big.x"), D3DXVECTOR3( 0.0f,  15.0f,  0.0f), false, 1.0f },
+        { _T("cube_red_big.x"),   D3DXVECTOR3(14.0f,  -9.0f,  0.0f), false, 1.0f },
+        { _T("cube_white_big.x"), D3DXVECTOR3(-10.0f,  -7.5f,  14.0f), false, 1.0f },
     };
 
     const int meshCount = _countof(loadInfos);
@@ -342,6 +344,7 @@ void InitD3D(HWND hWnd)
         assert(hResult == S_OK);
 
         g_meshes[mi].position = loadInfos[mi].position;
+        g_meshes[mi].hdrIntensity = loadInfos[mi].hdrIntensity;
         if (true)
         {
             g_meshes[mi].unlit = loadInfos[mi].unlit;
@@ -430,12 +433,12 @@ void InitD3D(HWND hWnd)
     hResult = BuildTangentSpaceMesh(&g_pMeshSphere);
     assert(hResult == S_OK);
 
-    // RT0: color, RT1: high-precision depth, RT2: normal, RT3: post-process
+    // RT0: HDR color, RT1: high-precision depth, RT2: normal, RT3: post-process HDR
     hResult = D3DXCreateTexture(g_pd3dDevice,
                                 1600, 900,
                                 1,
                                 D3DUSAGE_RENDERTARGET,
-                                D3DFMT_A8R8G8B8,
+                                D3DFMT_A16B16G16R16F,
                                 D3DPOOL_DEFAULT,
                                 &g_pRenderTarget);
     assert(hResult == S_OK);
@@ -462,7 +465,7 @@ void InitD3D(HWND hWnd)
                                  1600, 900,
                                  1,
                                  D3DUSAGE_RENDERTARGET,
-                                 D3DFMT_A8R8G8B8,
+                                 D3DFMT_A16B16G16R16F,
                                  D3DPOOL_DEFAULT,
                                  &g_pRenderTarget4);
     assert(hResult == S_OK);
@@ -627,6 +630,8 @@ void RenderPass1()
     D3DXVECTOR4 defaultBaseColor(1.0f, 1.0f, 1.0f, 1.0f);
     hResult = g_pEffect1->SetVector("g_baseColor", &defaultBaseColor);
     assert(hResult == S_OK);
+    hResult = g_pEffect1->SetFloat("g_hdrIntensity", 1.0f);
+    assert(hResult == S_OK);
 
     UINT numPass = 0;
     hResult = g_pEffect1->Begin(&numPass, 0); assert(hResult == S_OK);
@@ -645,6 +650,8 @@ void RenderPass1()
         hResult = g_pEffect1->SetMatrix("g_matWorldViewProj", &matWVP);
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUnlit", g_meshes[mi].unlit ? TRUE : FALSE);
+        assert(hResult == S_OK);
+        hResult = g_pEffect1->SetFloat("g_hdrIntensity", g_meshes[mi].hdrIntensity);
         assert(hResult == S_OK);
 
         for (DWORD i = 0; i < g_meshes[mi].numMaterials; i++)
@@ -666,6 +673,8 @@ void RenderPass1()
 
         D3DXVECTOR4 sphereBaseColor(0.53f, 0.81f, 0.92f, 1.0f);
         hResult = g_pEffect1->SetVector("g_baseColor", &sphereBaseColor);
+        assert(hResult == S_OK);
+        hResult = g_pEffect1->SetFloat("g_hdrIntensity", 1.0f);
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUnlit", TRUE);
         assert(hResult == S_OK);

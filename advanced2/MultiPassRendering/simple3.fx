@@ -10,6 +10,7 @@ sampler textureSampler = sampler_state
 };
 
 float g_exposure = 1.0f;
+bool g_bEnableToneMapping = true;
 
 float3 ToneMapACES(float3 color)
 {
@@ -31,8 +32,12 @@ void PixelShader1(in float2 inTexCood : TEXCOORD0,
                   out float4 outColor : COLOR)
 {
     float4 hdrColor = tex2D(textureSampler, inTexCood);
-    float3 mappedColor = ToneMapACES(hdrColor.rgb);
-    mappedColor = pow(mappedColor, 1.0 / 2.2);
+    float3 mappedColor = saturate(hdrColor.rgb);
+    if (g_bEnableToneMapping)
+    {
+        mappedColor = ToneMapACES(hdrColor.rgb);
+        mappedColor = pow(mappedColor, 1.0 / 2.2);
+    }
     outColor = float4(mappedColor, saturate(hdrColor.a));
 }
 

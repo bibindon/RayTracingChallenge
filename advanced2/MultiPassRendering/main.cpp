@@ -45,6 +45,7 @@ LPD3DXEFFECT g_pEffect3 = NULL;
 bool g_bClose = false;
 bool g_bRayTracingEnabled = true;
 bool g_bSSAOEnabled = true;
+bool g_bHDRToneMappingEnabled = true;
 int g_nBackgroundMode = 0;
 
 // === 変更: RT を 3 枚用意 ===
@@ -651,7 +652,8 @@ void RenderPass1()
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUnlit", g_meshes[mi].unlit ? TRUE : FALSE);
         assert(hResult == S_OK);
-        hResult = g_pEffect1->SetFloat("g_hdrIntensity", g_meshes[mi].hdrIntensity);
+        float meshHDRIntensity = g_bHDRToneMappingEnabled ? g_meshes[mi].hdrIntensity : 1.0f;
+        hResult = g_pEffect1->SetFloat("g_hdrIntensity", meshHDRIntensity);
         assert(hResult == S_OK);
 
         for (DWORD i = 0; i < g_meshes[mi].numMaterials; i++)
@@ -810,6 +812,8 @@ void RenderPass3()
 
     hResult = g_pEffect3->SetTexture("texture1", g_pRenderTarget4);
     assert(hResult == S_OK);
+    hResult = g_pEffect3->SetBool("g_bEnableToneMapping", g_bHDRToneMappingEnabled ? TRUE : FALSE);
+    assert(hResult == S_OK);
     hResult = g_pEffect3->CommitChanges();
     assert(hResult == S_OK);
 
@@ -867,6 +871,11 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         if (wParam == '3')
         {
             g_nBackgroundMode = (g_nBackgroundMode + 1) % 3;
+            return 0;
+        }
+        if (wParam == '4')
+        {
+            g_bHDRToneMappingEnabled = !g_bHDRToneMappingEnabled;
             return 0;
         }
         break;

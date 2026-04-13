@@ -1,6 +1,7 @@
 float4x4 g_matWorldViewProj;
+float4x4 g_matWorld;
 float4x4 g_matView;
-float4 g_lightNormal = { 0.3f, 1.0f, 0.5f, 0.0f };
+float4 g_lightPosition = { -8.0f, 6.0f, -4.0f, 1.0f };
 float4 g_baseColor = { 0.5f, 0.5f, 0.5f, 1.0f };
 float3 g_ambient = { 0.4f, 0.4f, 0.4f };
 float g_hdrIntensity = 1.0f;
@@ -26,9 +27,12 @@ void VertexShader1(
     out float2 outTexCoord0 : TEXCOORD0,
     out float2 outClipZW : TEXCOORD1,
     out float3 outNormal : TEXCOORD2,
-    out float3 outTangent : TEXCOORD3)
+    out float3 outTangent : TEXCOORD3,
+    out float3 outWorldNormal : TEXCOORD4,
+    out float3 outWorldPosition : TEXCOORD5)
 {
     float4 clipPosition = mul(inPosition, g_matWorldViewProj);
+    float4 worldPosition = mul(inPosition, g_matWorld);
     outPosition = clipPosition;
     outTexCoord0 = inTexCoord0;
 
@@ -37,6 +41,8 @@ void VertexShader1(
 
     outNormal = mul(inNormal, (float3x3)g_matView);
     outTangent = mul(inTangent, (float3x3)g_matView);
+    outWorldNormal = mul(inNormal, (float3x3)g_matWorld);
+    outWorldPosition = worldPosition.xyz;
 }
 
 void PixelShaderMRT(
@@ -44,6 +50,8 @@ void PixelShaderMRT(
     in float2 inClipZW : TEXCOORD1,
     in float3 inNormal : TEXCOORD2,
     in float3 inTangent : TEXCOORD3,
+    in float3 inWorldNormal : TEXCOORD4,
+    in float3 inWorldPosition : TEXCOORD5,
     out float4 outColor0 : COLOR0,
     out float4 outColor1 : COLOR1,
     out float4 outColor2 : COLOR2,
@@ -60,8 +68,8 @@ void PixelShaderMRT(
     float3 litColor = baseColor.rgb;
     if (!g_bUnlit)
     {
-        float3 N = normalize(inNormal);
-        float3 L = normalize(g_lightNormal.xyz);
+        float3 N = normalize(inWorldNormal);
+        float3 L = normalize(g_lightPosition.xyz - inWorldPosition);
         float NdotL = saturate(dot(N, L));
         float3 lighting = g_ambient + (1.0 - g_ambient) * NdotL;
         litColor *= lighting;

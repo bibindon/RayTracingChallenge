@@ -235,11 +235,7 @@ void PixelShader1(in float4 inPosition    : POSITION,
 
             // 同一面の自己ヒットを減らすため、法線が似すぎているものは寄与を抑える。
             float normalAlignment = dot(normal, sampleNormal);
-            float normalWeight = saturate(0.2 + 0.8 * ((1.0 - normalAlignment) * 0.5));
-            if (normalAlignment > 0.95)
-            {
-                normalWeight = 0.0;
-            }
+            float normalWeight = saturate(1.0 - normalAlignment);
 
             // 半球外からの不自然なヒットは寄与を落とす。
             float hemisphereWeight = saturate(0.35 + 0.65 * dot(sampleDir, SafeNormalize(deltaToHit, sampleDir)));

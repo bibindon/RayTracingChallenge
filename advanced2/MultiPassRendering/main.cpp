@@ -649,6 +649,8 @@ void RenderPass1()
                               g_meshes[mi].position.y,
                               g_meshes[mi].position.z);
         D3DXMATRIX matWVP = matWorld * View * Proj;
+        hResult = g_pEffect1->SetMatrix("g_matWorld", &matWorld);
+        assert(hResult == S_OK);
         hResult = g_pEffect1->SetMatrix("g_matWorldViewProj", &matWVP);
         assert(hResult == S_OK);
         hResult = g_pEffect1->SetBool("g_bUnlit", g_meshes[mi].unlit ? TRUE : FALSE);
@@ -671,6 +673,8 @@ void RenderPass1()
         D3DXMATRIX matIdentity;
         D3DXMatrixIdentity(&matIdentity);
         D3DXMATRIX matWVP = matIdentity * View * Proj;
+        hResult = g_pEffect1->SetMatrix("g_matWorld", &matIdentity);
+        assert(hResult == S_OK);
         hResult = g_pEffect1->SetMatrix("g_matWorldViewProj", &matWVP);
         assert(hResult == S_OK);
 

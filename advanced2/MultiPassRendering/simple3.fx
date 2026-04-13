@@ -33,7 +33,7 @@ bool g_bEnableGaussianFilter = true;
 float g_gaussianBlendFactor = 0.85f;
 float g_gaussianDepthThreshold = 0.0035f;
 float g_gaussianNormalDotThreshold = 0.95f;
-float g_gaussianKernelRadius = 20.0f;
+float g_gaussianKernelRadius = 10.0f;
 
 float3 ToneMapACES(float3 color)
 {
